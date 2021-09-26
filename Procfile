@@ -1,0 +1,1 @@
+worker: python Mašina 0.99.py
