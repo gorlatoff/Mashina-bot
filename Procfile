@@ -1,1 +1,1 @@
-worker: python Mašina 0.99.py
+worker: python Mashina 0.99.py
