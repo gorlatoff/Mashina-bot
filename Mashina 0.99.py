@@ -55,13 +55,17 @@ def iskati_slovo(jezyk, slovo, sheet):
 
 
 def formatizer(slovo):
+    if slovo[-1] == ' ':
+        slovo = slovo[0:-1]
+        
     if '!' not in slovo[0:1]:
         return f" {slovo}"
     if '! ' == slovo[0:2]:
         slovo = str.replace(slovo, '! ', '!')
 
     slovo = slovo[1:len(slovo)]
-    return f" *{slovo}* "
+
+    return f" *{slovo}*"
 
 
 def embed_words(i):
