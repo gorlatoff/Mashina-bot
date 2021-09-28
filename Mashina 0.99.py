@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 from pandas import read_excel
 import re
+import asyncio
 
 
 
