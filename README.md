@@ -1,3 +1,18 @@
+## Potrěbne za rabotu koda biblioteky:
+
+```bash
+pip install translators
+pip install pandas 
+pip install discord 
+pip install openpyxl 
+pip install shedule 
+pip install Wikipedia-API
+```
+
+
+
+## Komandy bota:
+
 Iskati něčto po jezyku:
 `.ms krugly stol` 
 `.ср разумети`, i tako dalje

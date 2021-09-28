@@ -269,6 +269,7 @@ def run_shedule():
 
 def run_bot():
     bot.run(settings['token'])
+    #bot.start(settings['token'])
     
 
 if __name__ == "__main__":
