@@ -1,16 +1,3 @@
-## Potrěbne za rabotu koda biblioteky:
-
-```bash
-pip install translators
-pip install pandas 
-pip install discord 
-pip install openpyxl 
-pip install shedule 
-pip install Wikipedia-API
-```
-
-
-
 ## Komandy bota:
 
 Iskati něčto po jezyku:
@@ -32,3 +19,26 @@ L'étendard sanglant est levé`
 
 Od problemov: 
 `.kill`
+
+`.obnoviti`
+
+
+
+## Za rabotu koda:
+
+Potrěbne biblioteky:
+
+```bash
+pip install translators
+pip install pandas 
+pip install discord 
+pip install openpyxl 
+pip install shedule 
+pip install Wikipedia-API
+```
+
+Takože za svojego bota potrěbno stvoriti Discord aplikaciju:
+
+https://discord.com/developers/applications/
+
+https://habr.com/ru/post/511454/

@@ -7,7 +7,6 @@ import discord
 from discord.ext import commands
 from pandas import read_excel
 import re
-import asyncio
 
 
 
@@ -15,7 +14,7 @@ import asyncio
 def update_slovnik():
     print("list aploduje se")
     global dfs
-    dfs = read_excel(io='https://docs.google.com/spreadsheets/d/e/2PACX-1vQlOf_9YqxCzwFLX6roaz1xQctVW5CTpWpGWUjkJPxWRbsubZP019-qg3KZrBF55RNza1CgVHKDQ7yb/pub?output=xlsx',
+    dfs = read_excel(io='https://docs.google.com/spreadsheets/d/e/2PACX-1vRsEDDBEt3VXESqAgoQLUYHvsA5yMyujzGViXiamY7-yYrcORhrkEl5g6JZPorvJrgMk6sjUlFNT4Km/pub?output=xlsx',
                     engine='openpyxl',
                     sheet_name=['words', 'suggestions'])
     dfs['suggestions'].columns = dfs['suggestions'].iloc[0]
@@ -101,6 +100,13 @@ def embed_suggestions(i):
     embed.set_footer(text = f"Avtor: {suggestions['kto dodal'][i]}, ID: {suggestions['id'][i]}")
     return embed
 
+def embed_words_list(najdene_slova):
+    embed = discord.Embed( title=f"Sut prěmnogo sinonimov:")
+    for i in najdene_slova:
+        embed.add_field(name=f"{dfs['words']['isv'][i]}", value=f"[{i} v slovniku](https://docs.google.com/spreadsheets/d/1N79e_yVHDo-d026HljueuKJlAAdeELAiPzdFzdBuKbY/edit#gid=1987833874&range={i}:{i})", inline=False )
+    return embed
+
+
 
 bot = commands.Bot(command_prefix = settings['prefix']) 
 
@@ -133,9 +139,8 @@ async def najdtislovo(ctx):
     najdene_slova = iskati(jezycny_kod, slova, dfs['words'])
     if najdene_slova:
         if len(najdene_slova) > 4:
-            await ctx.send( f"Sut prěmnogo sinonimov:" )
-            for i in najdene_slova:
-                await ctx.send( f"{dfs['words']['isv'][i]}, <https://docs.google.com/spreadsheets/d/1N79e_yVHDo-d026HljueuKJlAAdeELAiPzdFzdBuKbY/edit#gid=1987833874&range={i}:{i}>" )
+            await ctx.send( embed=embed_words_list(najdene_slova) )
+            return True
         else:
             for i in najdene_slova:
                 await ctx.send( embed=embed_words(i) )
@@ -165,6 +170,12 @@ async def najdtislovo(ctx):
 async def killbot(ctx):
     await ctx.send("Bot jest obstanovjeny")
     await bot.close()
+
+@bot.command(aliases = ['obnoviti'])
+async def restartbot(ctx):
+    await ctx.send("Slovnik aploduje se")
+    update_slovnik()
+    await ctx.send("Obnovjenje jest uspěšno skončeno")
 
 
 @bot.command(aliases = ['wiki'])
@@ -253,44 +264,36 @@ Od problemov:
 
 
 
+import schedule
+import time
+import threading
 
 
-update_slovnik()
-bot.run(settings['token'])
+def scheduler_function():
+    while True:
+        schedule.run_pending()
+        time.sleep(5)
 
+def run_shedule():
+    schedule.every(240).minutes.do(lambda:update_slovnik())
+    scheduler_function()
 
-
-
-# import schedule
-# import time
-# import threading
-
-
-# def scheduler_function():
-#     while True:
-#         schedule.run_pending()
-#         time.sleep(5)
-
-# def run_shedule():
-#     schedule.every(240).minutes.do(lambda:update_slovnik())
-#     scheduler_function()
-
-# def run_bot():
-#     bot.run(settings['token'])
+def run_bot():
+    bot.run(settings['token'])
     
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
 
-#     update_slovnik()
+    update_slovnik()
 
-#     x = threading.Thread(target=run_shedule)
-#     y = threading.Thread(target=run_bot)
+    x = threading.Thread(target=run_shedule)
+    y = threading.Thread(target=run_bot)
     
-#     x.start()
-#     y.start()
+    x.start()
+    y.start()
 
-#     x.join()
-#     y.join()
+    x.join()
+    y.join()
 
 
 

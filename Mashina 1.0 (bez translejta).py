@@ -1,6 +1,7 @@
 from work_with_wiki import *
 from transliterations import *
 from bot_config import *
+#from py_translators import *
 
 import discord
 from discord.ext import commands
@@ -13,7 +14,7 @@ import re
 def update_slovnik():
     print("list aploduje se")
     global dfs
-    dfs = read_excel(io='https://docs.google.com/spreadsheets/d/e/2PACX-1vQlOf_9YqxCzwFLX6roaz1xQctVW5CTpWpGWUjkJPxWRbsubZP019-qg3KZrBF55RNza1CgVHKDQ7yb/pub?output=xlsx',
+    dfs = read_excel(io='https://docs.google.com/spreadsheets/d/e/2PACX-1vRsEDDBEt3VXESqAgoQLUYHvsA5yMyujzGViXiamY7-yYrcORhrkEl5g6JZPorvJrgMk6sjUlFNT4Km/pub?output=xlsx',
                     engine='openpyxl',
                     sheet_name=['words', 'suggestions'])
     dfs['suggestions'].columns = dfs['suggestions'].iloc[0]
@@ -56,13 +57,15 @@ def iskati_slovo(jezyk, slovo, sheet):
 def formatizer(slovo):
     if slovo[-1] == ' ':
         slovo = slovo[0:-1]
+        
     if '!' not in slovo[0:1]:
         return f" {slovo}"
     if '! ' == slovo[0:2]:
         slovo = str.replace(slovo, '! ', '!')
 
     slovo = slovo[1:len(slovo)]
-    return f" *{slovo}* "
+
+    return f" *{slovo}*"
 
 
 def embed_words(i):
@@ -97,6 +100,13 @@ def embed_suggestions(i):
     embed.set_footer(text = f"Avtor: {suggestions['kto dodal'][i]}, ID: {suggestions['id'][i]}")
     return embed
 
+def embed_words_list(najdene_slova):
+    embed = discord.Embed( title=f"Sut prěmnogo sinonimov:")
+    for i in najdene_slova:
+        embed.add_field(name=f"{dfs['words']['isv'][i]}", value=f"[{i} v slovniku](https://docs.google.com/spreadsheets/d/1N79e_yVHDo-d026HljueuKJlAAdeELAiPzdFzdBuKbY/edit#gid=1987833874&range={i}:{i})", inline=False )
+    return embed
+
+
 
 bot = commands.Bot(command_prefix = settings['prefix']) 
 
@@ -129,9 +139,8 @@ async def najdtislovo(ctx):
     najdene_slova = iskati(jezycny_kod, slova, dfs['words'])
     if najdene_slova:
         if len(najdene_slova) > 4:
-            await ctx.send( f"Sut prěmnogo sinonimov:" )
-            for i in najdene_slova:
-                await ctx.send( f"{dfs['words']['isv'][i]}, <https://docs.google.com/spreadsheets/d/1N79e_yVHDo-d026HljueuKJlAAdeELAiPzdFzdBuKbY/edit#gid=1987833874&range={i}:{i}>" )
+            await ctx.send( embed=embed_words_list(najdene_slova) )
+            return True
         else:
             for i in najdene_slova:
                 await ctx.send( embed=embed_words(i) )
@@ -153,6 +162,7 @@ async def najdtislovo(ctx):
         await ctx.send( wiki )
         return True
     await ctx.send("Nažalost, ničto ne jest najdeno.")    
+    #await ctx.send(translator_light(jezycny_kod, slova))     
 
 
     
@@ -160,6 +170,12 @@ async def najdtislovo(ctx):
 async def killbot(ctx):
     await ctx.send("Bot jest obstanovjeny")
     await bot.close()
+
+@bot.command(aliases = ['obnoviti'])
+async def restartbot(ctx):
+    await ctx.send("Slovnik aploduje se")
+    update_slovnik()
+    await ctx.send("Obnovjenje jest uspěšno skončeno")
 
 
 @bot.command(aliases = ['wiki'])
@@ -204,6 +220,22 @@ async def wiki2(ctx):
 
 
 
+# @bot.command(aliases = ['prěvod_lite'])
+# async def prěvod1(ctx):
+#     await ctx.send(f'Čekaj, to trěbuje časa')                             
+#     text = ctx.message.content
+#     jezyk = text.split(" ")[1]
+#     jezyk = kirilicna_zamena(jezyk)
+
+#     start = len("prěvod_lite" + " " + jezyk) + 1
+#     fraza = text[start:len(text)]
+
+#     result = translator_light(jezyk, fraza)
+#     if result == False:
+#         await ctx.send("ne znajemy problem\n fraza = {fraza},\n jezyk = {jezyk}")
+#         return
+#     await ctx.send(result)
+
 
 @bot.command(aliases = ['komandy', 'Komandy', 'commands', 'Commands'])
 async def pomogti(ctx):
@@ -229,7 +261,6 @@ Od problemov:
 `.kill`
     """
     await ctx.send(text) 
-
 
 
 
