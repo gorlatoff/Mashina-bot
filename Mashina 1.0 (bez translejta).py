@@ -1,7 +1,7 @@
 from work_with_wiki import *
 from transliterations import *
 from bot_config import *
-#from py_translators import *
+# from py_translators import *
 
 import discord
 from discord.ext import commands
@@ -100,10 +100,10 @@ def embed_suggestions(i):
     embed.set_footer(text = f"Avtor: {suggestions['kto dodal'][i]}, ID: {suggestions['id'][i]}")
     return embed
 
-def embed_words_list(najdene_slova):
-    embed = discord.Embed( title=f"Sut prěmnogo sinonimov:")
+def embed_words_list(najdene_slova, text):
+    embed = discord.Embed( title=text)
     for i in najdene_slova:
-        embed.add_field(name=f"{dfs['words']['isv'][i]}", value=f"[{i} v slovniku](https://docs.google.com/spreadsheets/d/1N79e_yVHDo-d026HljueuKJlAAdeELAiPzdFzdBuKbY/edit#gid=1987833874&range={i}:{i})", inline=False )
+        embed.add_field(name=f"{dfs['words']['isv'][i]}", value=f"[{i+2} v slovniku](https://docs.google.com/spreadsheets/d/1N79e_yVHDo-d026HljueuKJlAAdeELAiPzdFzdBuKbY/edit#gid=1987833874&range={i+2}:{i+2})", inline=False )
     return embed
 
 
@@ -139,7 +139,7 @@ async def najdtislovo(ctx):
     najdene_slova = iskati(jezycny_kod, slova, dfs['words'])
     if najdene_slova:
         if len(najdene_slova) > 4:
-            await ctx.send( embed=embed_words_list(najdene_slova) )
+            await ctx.send( embed=embed_words_list(najdene_slova, "Sut prěmnogo sinonimov:" ))
             return True
         else:
             for i in najdene_slova:
@@ -148,9 +148,7 @@ async def najdtislovo(ctx):
     else:
         najdene_slova = iskati_slovo(jezycny_kod, slova, dfs['words']) 
         if najdene_slova: 
-            await ctx.send(f'Imamo jedino:')
-            for i in najdene_slova:
-                await ctx.send( f"{dfs['words']['isv'][i]}, <https://docs.google.com/spreadsheets/d/1N79e_yVHDo-d026HljueuKJlAAdeELAiPzdFzdBuKbY/edit#gid=1987833874&range={i}:{i}>" )
+            await ctx.send( embed=embed_words_list(najdene_slova, "Imamo jedino:" ))
     najdene_slova_suggestions = iskati_slovo(jezycny_kod, slova, dfs['suggestions'])
     if najdene_slova_suggestions:
         for i in najdene_slova_suggestions:
@@ -162,7 +160,9 @@ async def najdtislovo(ctx):
         await ctx.send( wiki )
         return True
     await ctx.send("Nažalost, ničto ne jest najdeno.")    
-    #await ctx.send(translator_light(jezycny_kod, slova))     
+    # await ctx.send("Nažalost, ničto ne jest najdeno. Čekaj dalje.")        
+    # await ctx.send(translator_light(jezycny_kod, slova))
+
 
 
     
