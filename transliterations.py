@@ -1,3 +1,60 @@
+
+
+
+def kirilica_do_latinici(text):
+    text = str.replace(text,'ньј', 'ńj')
+    text = str.replace(text,'ь', '') 
+    text = str.replace(text,'а', 'a') 
+    text = str.replace(text,'ӑ', 'å')
+    text = str.replace(text,'б', 'b')
+    text = str.replace(text,'в', 'v')
+    text = str.replace(text,'ў', 'v') 
+    text = str.replace(text,'г', 'g')
+    text = str.replace(text,'ґ', 'g')
+    text = str.replace(text,'д', 'd')
+    text = str.replace(text,'дж','dž')
+    text = str.replace(text,'ђ','dž')
+    text = str.replace(text,'е', 'e')
+    text = str.replace(text,'є', 'ě')
+    text = str.replace(text,'ѣ', 'ě')
+    text = str.replace(text,'ж', 'ž')
+    text = str.replace(text,'з', 'z')
+    text = str.replace(text,'и', 'i')
+    text = str.replace(text,'ј', 'j')
+    text = str.replace(text,'ї', 'ji')
+    text = str.replace(text,'й', 'j')
+    text = str.replace(text,'к', 'k')
+    text = str.replace(text,'л', 'l')
+    text = str.replace(text,'љ', 'lj')
+    text = str.replace(text,'м', 'm')
+    text = str.replace(text,'н', 'n')
+    text = str.replace(text,'њ', 'nj')
+    text = str.replace(text,'о', 'o')
+    text = str.replace(text,'п', 'p')
+    text = str.replace(text,'р', 'r')
+    text = str.replace(text,'с', 's')
+    text = str.replace(text,'т', 't')
+    text = str.replace(text,'у', 'u')
+    text = str.replace(text,'ф', 'f')
+    text = str.replace(text,'х', 'h')
+    text = str.replace(text,'ц', 'c')
+    text = str.replace(text,'ч', 'č')
+    text = str.replace(text,'ш', 'š')  
+    text = str.replace(text,'щ', 'šč') 
+    text = str.replace(text,'ъ', 'ȯ')
+    text = str.replace(text,'ы', 'y')  
+    text = str.replace(text,'ю', 'ju')  
+    text = str.replace(text,'я', 'ja')
+    text = str.replace(text,'ё', 'e')
+    text = str.replace(text,'ѫ', 'ų')
+    text = str.replace(text,'ѧ', 'ę')   
+    text = str.replace(text,'ћ', 'ć')   
+    text = str.replace(text,'ѥ', 'je')   
+    text = str.replace(text,'ꙑ', 'y')         
+    return text
+
+
+
 def kirilicna_zamena(text):
     text = str.replace(text,'ру', 'ru')
     text = str.replace(text,'бе', 'be')
@@ -57,6 +114,11 @@ def transliteration_uk(text):
     text = str.replace(text,'ґ', 'г')
     return text
 
+def transliteration_be(text):
+    text = str(text)
+    text = str.replace(text,'ґ', 'г')
+    return text
+
 def ryba(text):
     return text
 
@@ -64,7 +126,7 @@ transliteration = {'isv': etymologicna_zamena,
                    'ru': transliteration_ru, 
                    'pl': transliteration_pl,
                    'uk': transliteration_uk,   
-                   'be': ryba,
+                   'be': transliteration_be,
                    'cs': ryba,
                    'sk': ryba,
                    'bg': ryba,
