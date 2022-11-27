@@ -1,27 +1,26 @@
 ## Komandy bota:
 
-Iskati něčto po jezyku:
+**Iskati po jezyku:**
+`.en dog` 
 `.ms krugly stol` 
 `.ср разумети`, i tako dalje
 
-Gleděti slovo po id:
+Tut jest spis možlivyh jezykov i jih kodov:
+`isv` medžuslovjansky, `en` anglijsky, `ru` russky, `be` bělorussky, `uk` ukrajinsky, `pl` poljsky, `cs` češsky, `sk` slovačsky, `bg` bulgarsky, `mk` makedonsky, `sr` srbsky, `hr` hrvatsky, `sl` slovensky, `cu` staroslovjansky, `csb` kašubsky, `dsb` dolnolužičsky, `hsb` gornolužičsky, `de` němečsky, `nl` niderlandsky, `eo` esperanto.
+
+**Da by pokazati slovo po jego ID:**
 `.id 474`
 
-Iskati vo wiki:
+**Iskati vo wiki:**
 `.wiki en katana`
 `.wiki_summary ru собака`
 
-Avtomatičny prěvod:
-`.prěvod_lite fr Allons enfants de la Patrie,
-Le jour de gloire est arrivé!
-Contre nous de la tyrannie
-L'étendard sanglant est levé`
+**Spis komand za pokazyvanje pouk:**
+`.linky1`, `.linky2`, `.pasivno_učenje`, `.kako_učiti`, `.slovnik1`, `.slovnik2`, `.o_frazniku`, `.o_botu`, `.keyboards`
 
-Od problemov: 
-`.kill`
-
-`.obnoviti`
-
+**Da by obnoviti dane:**
+`.obnoviti fraznik` - obnoviti naš fraznik
+`.obnoviti` - obnoviti slovnik
 
 
 ## Za rabotu koda:
@@ -29,11 +28,9 @@ Od problemov:
 Potrěbne biblioteky:
 
 ```bash
-pip install translators
 pip install pandas 
-pip install discord 
+pip install discord.py-fork
 pip install openpyxl 
-pip install shedule 
 pip install Wikipedia-API
 ```
 
