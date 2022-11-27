@@ -253,8 +253,6 @@ Tut jest spis možlivyh jezykov i jih kodov:
 **Da by obnoviti dane:**
 `.obnoviti fraznik` - obnoviti naš fraznik
 `.obnoviti` - obnoviti slovnik
-
-`.kill` - ako li bot bude dělati problem, jest možnost tuto rěšiti
     """
     await ctx.send(text) 
 
