@@ -1,7 +1,7 @@
 
 from wikipediaapi import Wikipedia
-SLOVJANSKE_VIKI = "ru pl uk sr cs sh bg sk hr be sl mk be-x-old hsb rue dsb cu".split(" ")
-slovjanske_viki = "ru pl uk sr cs bg sk hr be sl mk".split(" ")
+# SLOVJANSKE_VIKI = "ru be be-x-old uk rue pl hsb dsb cs sk bg mk sr hr sh sl cu".split(" ")
+# slovjanske_viki = "ru be uk pl cs sk bg mk sr hr sl".split(" ")
 
 
 def sentence_splitter(s):
@@ -17,35 +17,41 @@ def sentence_splitter(s):
         
         
 def wiki_titles(lang, text):
+    SLOVJANSKE_VIKI = "ru be be-x-old uk rue pl hsb dsb cs sk bg mk sr hr sh sl cu".split(" ")
+    lang = str.replace(lang,'be-tarask', 'be-x-old')
     wiki_wiki = Wikipedia(lang)
     page_test = wiki_wiki.page(text)
     if page_test.summary == '':
         return False
     result ="Rezultaty iz Wikipedije:\n"
-
+    result = result + f"`{lang}` {page_test.title}" + "\n"
+    if page_test.langlinks == {}:
+        result = result + str( sentence_splitter(page_test.summary) ) + "\n"
+        return result
+    if lang in SLOVJANSKE_VIKI:
+        SLOVJANSKE_VIKI.remove(lang)  
     for k in SLOVJANSKE_VIKI:
         try:
             result = result + f"`{k}` {page_test.langlinks[k].title}" + "\n"
         except KeyError:
-            if k == lang:
-                result = result + f"`{k}` {page_test.title}" + "\n"
+            pass
     return result
 
 
 
 
 def wiki_text(lang, text):
+    slovjanske_viki = "ru be uk pl cs sk bg mk sr hr sl".split(" ")
     wiki_wiki = Wikipedia(lang)
     page_test = wiki_wiki.page(text)
     if page_test.summary == '':
         return False
     result ="Rezultaty iz Wikipedije:\n"
-
+    result = result + f"`{lang}` {page_test.title}: "
+    result = result + str( sentence_splitter(page_test.summary) ) + "\n"
+    if lang in slovjanske_viki:
+        slovjanske_viki.remove(lang) 
     for k in slovjanske_viki:
-        if k == lang:
-            result = result + f"`{k}` {page_test.title}: "
-            result = result + str( sentence_splitter(page_test.summary) ) + "\n"
-            pass
         try:
             result = result + f"`{k}` {page_test.langlinks[k].title}: "
             result = result + str( sentence_splitter(page_test.langlinks[k].summary) ) + "\n"
@@ -76,6 +82,7 @@ wikis = [
  'bat-smg',
  'bcl',
  'be',
+ 'be-tarask',
  'be-x-old',
  'bg',
  'bh',
