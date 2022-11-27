@@ -6,12 +6,15 @@ import asyncio
 import discord
 from discord.ext import commands
 
-slovnik_loaded = isv.load_slovnik()   
+def load_data(update=False):
+    global slovnik_loaded, words, suggestions, discord_fraznik 
 
-words = isv.prepare_slovnik(slovnik_loaded['words']) 
-suggestions = isv.prepare_slovnik(slovnik_loaded['suggestions']) 
-discord_fraznik = isv.load_discord_fraznik()
+    slovnik_loaded = isv.load_slovnik(obnoviti=update)   
+    words = isv.prepare_slovnik(slovnik_loaded['words']) 
+    suggestions = isv.prepare_slovnik(slovnik_loaded['suggestions']) 
+    discord_fraznik = isv.load_discord_fraznik()
 
+load_data()
 
 def formatizer(slovo):
     if slovo[-1] == ' ':
@@ -360,6 +363,10 @@ async def killbot(ctx):
     await ctx.send("Bot jest zastanovjeny")
     await bot.close() 
 
-
+@bot.command(aliases = ['obnoviti'])
+async def obnovjenje(ctx):
+    await ctx.send("Dostava slovnika...")
+    load_data(update=True)
+    await ctx.send("Obnovjenje jest uspěšno skončeno")
     
 bot.run(settings['token'])

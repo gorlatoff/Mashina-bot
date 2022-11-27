@@ -223,12 +223,6 @@ async def fpouka_klaviatury(ctx):
 
 
 
-@bot.command(aliases = ['Hello', 'Pozdrav', 'Zdrav', 'Zdrav,', 'hello', 'pozdrav', 'zdrav', 'zdrav,'])
-async def pozdravjenje(ctx):                    # Создаём функцию и передаём аргумент ctx.
-    author = ctx.message.author                 # Объявляем переменную author и записываем туда информацию об авторе.
-    await ctx.send(f'Zdrav, {author.mention}!') 
-
-
 @bot.command(name = 'pomoč', aliases = ['pomoc', 'komandy', 'Komandy', 'commands', 'Commands'])
 async def pomogti(ctx):
     text = """
