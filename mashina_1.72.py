@@ -109,6 +109,8 @@ def commands_reader(text):
     return {"slova": slova, "jezyk": jezycny_kod}
 
 bot = commands.Bot(command_prefix = settings['prefix']) 
+from pouky import *
+
 
 @bot.command(name = "fraznik", aliases = ['фразник'])
 async def najdti_vo_frazniku(ctx):
@@ -280,7 +282,9 @@ async def najdtislovo(ctx):
         jezyky_slovnika_slav.remove(jezycny_kod)
         jezyk2 = jezyky_slovnika_slav[ randrange( 0,len(jezyky_slovnika_slav) ) ]
         
-        await sendmessage(ctx, public, f"Ničto ne jest najdeno. Ale tobě mogut pomogti Glosbe: https://glosbe.com/{jezycny_kod}/{jezyk2}/{slova} i Nicetranslator: {nicetranslator(slova)} `")    
+        glosbe = slova.replace(" ", "%20")
+        
+        await sendmessage(ctx, public, f"Ničto ne jest najdeno. Ale tobě mogut pomogti Glosbe: https://glosbe.com/{jezycny_kod}/{jezyk2}/{ glosbe } i Nicetranslator: {nicetranslator(slova)} `")    
 
 
 
@@ -355,5 +359,7 @@ async def pozdravjenje(ctx):                    # Создаём функцию 
 async def killbot(ctx):
     await ctx.send("Bot jest zastanovjeny")
     await bot.close() 
+
+
     
 bot.run(settings['token'])

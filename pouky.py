@@ -229,7 +229,7 @@ async def pozdravjenje(ctx):                    # Создаём функцию 
     await ctx.send(f'Zdrav, {author.mention}!') 
 
 
-@bot.command(name = 'pomoč', aliases = ['komandy', 'Komandy', 'commands', 'Commands'])
+@bot.command(name = 'pomoč', aliases = ['pomoc', 'komandy', 'Komandy', 'commands', 'Commands'])
 async def pomogti(ctx):
     text = """
 **Iskati po jezyku:**
