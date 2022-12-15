@@ -8,7 +8,7 @@ slovnik_link = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRsEDDBEt3VXESqA
 
 def load_slovnik(tabela=slovnik_link, obnoviti=False):
     if obnoviti == False and os.path.isfile("slovnik_words.pkl") and os.path.isfile("slovnik_suggestions.pkl"):
-        print("Found 'slovnik_slovnik.pkl' file, using it")
+        print("Found 'slovnik_words.pkl' file, using it")
         print("Found 'slovnik_suggestions.pkl' file, using it")
         dfs = { "words": pd.read_pickle("slovnik_words.pkl"), 
                 "suggestions": pd.read_pickle("slovnik_suggestions.pkl")}
@@ -31,7 +31,22 @@ def load_slovnik(tabela=slovnik_link, obnoviti=False):
     return dfs
 
 
-
+def load_sheet(tabela_name, sheet_names: list, tabela, obnoviti):
+    ispath = [os.path.isfile(f"{tabela_name}_{name}.pkl") for name in sheet_names]
+    if obnoviti == False and (False not in ispath):
+        dfs = {}
+        for name in sheet_names:
+            sheetname = f'{tabela_name}_{name}.pkl'
+            dfs.update({name: pd.read_pickle(f'{sheetname}')})
+        return dfs
+    print(f'Dostava tabely {tabela_name}...')
+    dfs = pd.read_excel(io=tabela, engine='openpyxl', sheet_name=sheet_names)
+    print('Gotovo.')    
+    for name in sheet_names:
+        for col in dfs[name].columns:
+            dfs[name][col] = dfs[name][col].fillna(' ').astype(str)
+        dfs[name].to_pickle(f"{tabela_name}_{name}.pkl")
+    return dfs
 
 def load_discord_fraznik():
     discord_list = pd.read_excel(io='https://docs.google.com/spreadsheets/d/e/2PACX-1vTIevV03tPoLIILAx4DqHH6QetiiYb13xMiQ7HMvvleWLjveoJ6uayNIDLd0cKUMj9TtNsl2XDsZR8w/pub?output=xlsx',
@@ -49,7 +64,7 @@ def iskati_discord(jezyk, slovo, sheet):
         cell = cell.lower()
         cell = re.sub(r'\[.*?\]', '', cell)
         if jezyk == 'Vse varianty v MS':
-            cell = transliteration['isv'](cell)
+            cell = transliteracija(cell, 'isv')
         if slovo in str.split( cell, ', ' ):
             najdene_slova.append(i)
     return najdene_slova
@@ -61,27 +76,21 @@ trans_tables = { 'isv': 'ć-č ś-s ź-z ŕ-r ĺ-l ľ-l ń-n ť-t ť-t ď-d ď-d
                  'uk': 'ґ-г а́-а е́-е и́-и о́-о у́-у ы́-ы є́-є ю́-ю я́-я і́-і ї́-ї',  
                  'be': 'ґ-г а́-а е́-е и́-и о́-о у́-у ы́-ы э́-э ю́-ю я́-я і́-і',  
                  'bg': 'ѝ-и',
-                 'mk': 'ѝ-и ѐ-е'
-          #'sr': сербохорватский и словенский: четыре знака ударения (/, \, ^, \\), 
+                 'mk': 'ѝ-и ѐ-е',
+                 'kir_to_lat': 'ньј-ńj ь- а-a ӑ-å б-b в-v ў-v г-g ґ-g д-d дж-dž ђ-dž е-e є-ě ѣ-ě ж-ž з-z и-i ј-j ї-ji й-j к-k л-l љ-lj м-m н-n њ-nj о-o п-p р-r с-s т-t у-u ф-f х-h ц-c ч-č ш-š щ-šč ъ-ȯ ы-y ю-ju я-ja ё-e ѫ-ų ѧ-ę ћ-ć ѥ-je ꙑ-y',     
+                 'kirilicna_zamena': 'ру-ru бе-be ук-uk бг-bg мк-mk ср-sr ua-uk cz-cs ms-isv мс-isv',
 }
 
-def transliteration_replacer(text, lang):
+def transliteracija(text, lang):
+    if lang not in trans_tables.keys():
+        return text
     for i in trans_tables[lang].split(' '):
         letters = i.split('-')
         text = text.replace(letters[0], letters[1])
     return text
-
-
-from collections import defaultdict
-transliteration = defaultdict( lambda: lambda x: x)
-   
-transliteration['isv'] = lambda x: transliteration_replacer(x, 'isv')
-transliteration['ru'] = lambda x: transliteration_replacer(x, 'ru')
-transliteration['be'] = lambda x: transliteration_replacer(x, 'be')
-transliteration['uk'] = lambda x: transliteration_replacer(x, 'uk')
-transliteration['bg'] = lambda x: transliteration_replacer(x, 'bg')
-transliteration['mk'] = lambda x: transliteration_replacer(x, 'mk')
-
+    
+    
+transliteracija('text', 'kir_to_lat')
 
 # Oddaljaje space'y ako li one sut v početku teksta
 def despace(s):
@@ -94,7 +103,7 @@ def cell_normalization(cell, jezyk):
     cell = str.replace( cell, '!', '')
     cell = str.replace( cell, '#', '')
     cell = cell.lower()
-    cell = transliteration[jezyk](cell)
+    cell = transliteracija(cell, jezyk)
     return cell
 
 def symbols_normalization(cell):
@@ -111,8 +120,6 @@ def symbols_normalization(cell):
     cell = str.replace( cell, '\\', '' )                
     return cell
 
-# from transliterations import etymologicna_zamena
-
 def prepare_slovnik(slovnik, split=False, transliterate = True):
     sheet = slovnik.copy()
     langs = list((set(slovnik.columns) & set(LANGS) ))
@@ -125,29 +132,25 @@ def prepare_slovnik(slovnik, split=False, transliterate = True):
         sheet[lang] = sheet[lang].apply(lambda x: cell_normalization(x, lang))
         sheet[lang] = sheet[lang].apply(lambda x: despace(x))   
         if transliterate == True:
-            sheet[lang] = sheet[lang].apply(transliteration[lang])               
+            sheet[lang] = sheet[lang].apply(lambda x: transliteracija(x, lang))        
         if split == True:
-            sheet[lang + "_set"] = sheet[lang].str.split(", ").apply(lambda x: x)
+            sheet[lang] = sheet[lang].str.split(", ").apply(lambda x: x)
     sheet['isv'] = sheet['isv'].str.replace("!", "").str.replace("#", "").str.lower()
     return sheet
+
+
+slovnik_loaded = load_slovnik()   
+words = prepare_slovnik(slovnik_loaded['words']) 
 
 
 def filtr_contain(stroka, jezyk, sheet):
     return sheet[ sheet[jezyk].str.contains(stroka) == True].copy()
 
 
-def iskati(slovo, jezyk, sheet):
-    najdene_slova = []
-    if '(' in slovo:
-        for i, stroka in sheet.iterrows():    
-            if slovo in str.split( stroka[jezyk], ', ' ):
-                najdene_slova.append(i)
-    else:
-        for i, stroka in sheet.iterrows():    
-            if slovo in str.split( stroka[jezyk], ', ' ):
-                najdene_slova.append(i)
-    return najdene_slova
 
+def iskati(stroka, jezyk, sheet):
+    result = sheet[ sheet[jezyk].apply( lambda text: stroka in text.split(', '))]
+    return result.index.values.tolist()
 
 def iskati_slovo(slovo, jezyk, sheet):
     najdene_slova = []
@@ -156,9 +159,7 @@ def iskati_slovo(slovo, jezyk, sheet):
             najdene_slova.append(i)
     return najdene_slova
 
-
-
-
+    
 def in_dict(stroka, jezyk, sheet):
     sheet = filtr_contain(stroka, jezyk, sheet)
     sheet = iskati(stroka, jezyk, sheet)
@@ -184,8 +185,17 @@ def words_gluer(arr):
 
 
 
+
+
+
 # slovnik_loaded = load_slovnik()   
-# words = prepare_slovnik(slovnik_loaded['words']) 
+# words = prepare_slovnik(slovnik_loaded['words'], split=False) 
 # suggestions = prepare_slovnik(slovnik_loaded['suggestions']) 
 
 # najdene_slova_suggestions = iskati("S00002", 'id', suggestions)
+
+# contain = filtr_contain("снежный", "ru", words )
+
+# from timeit import timeit
+
+# timeit(lambda: iskati_slovo("снежный", "ru", contain ), number=1000 )
