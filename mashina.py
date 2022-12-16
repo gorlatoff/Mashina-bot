@@ -4,7 +4,10 @@ from bot_config import *
 import discord
 from discord.ext import commands
 
-def load_data(update=False):
+
+
+
+def load_data( update):
     global slovnik_loaded, words, suggestions, discord_fraznik, korpus_loaded, words_general 
 
     slovnik_loaded = isv.load_slovnik(obnoviti=update)   
@@ -13,7 +16,7 @@ def load_data(update=False):
     discord_fraznik = isv.load_discord_fraznik()
     
     korpus_link = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz8l3w4h--36bUS-5plpkkVLnSFmCPIB3WnpDYRer87eirVVMYfI-ZDbp3WczyL2G5bOSXKty2MpOY/pub?output=xlsx'    
-    korpus_loaded = isv.load_sheet(tabela_name="korpus",sheet_names=['words (general)'], tabela=korpus_link, obnoviti=update)  
+    korpus_loaded = isv.load_sheet(tabela_name="korpus", sheet_names=['words (general)'], tabela=korpus_link, obnoviti= update )
     words_general = isv.prepare_slovnik(korpus_loaded['words (general)'])
 
 
@@ -68,10 +71,12 @@ def embed_suggestions(i):
     embed.set_footer(text = f"Avtor: {suggestions['kto dodal'][i]}, ID: {suggestions['id'][i]}")
     return embed
 
+
+
 def embed_korpus(i):
     columns = "en ru be uk pl cs sk bg mk sr hr sl".split(" ")
     korpus = korpus_loaded['words (general)']
-    kartka = ""
+    kartka = ''
 
     for col in columns:
         kartka = kartka + f"**`{col}` **{ formatizer(korpus[col][i]) }\n" 
@@ -82,10 +87,10 @@ def embed_korpus(i):
         korpus['isv'][i] = "_____"
 
     embed.add_field(name=f"{korpus['isv'][i]}\n", value=f"{kartka} ", inline=False)
-    embed.set_footer(text = "Ako li hčeš pomogti v rabotě nad tabeloju, piši do koristnika @Neudržima Mašina Dobra")
+    # embed.set_footer(text = "Ako li hčeš pomogti v rabotě nad tabeloju, piši do koristnika @Neudržima Mašina Dobra")
     return embed
 
-
+isv.transliteracija(".ру 1", 'kirilicna_zamena')
 
 def embed_words_list(najdene_slova, text):
     embed = discord.Embed()
@@ -117,6 +122,7 @@ def embed_discord_list(i, tabela):
     return embed
 
 
+isv.transliteracija(".ру 2", 'kirilicna_zamena')
 
 def commands_reader(text):
     text = str.replace(text,'  ', ' ')
@@ -134,9 +140,11 @@ def commands_reader(text):
     print(f"jezyk = '{jezycny_kod}', slova = '{slova}'")
     return {"slova": slova, "jezyk": jezycny_kod}
 
+isv.transliteracija(".ру 3", 'kirilicna_zamena')
+
 bot = commands.Bot(command_prefix = settings['prefix']) 
 from pouky import *
-
+isv.transliteracija(".ру 4", 'kirilicna_zamena')
 
 @bot.command(name = "fraznik", aliases = ['фразник'])
 async def najdti_vo_frazniku(ctx):
@@ -172,7 +180,7 @@ async def najdti_vo_frazniku(ctx):
         return True
     return await ctx.send( "Ničto ne jest najdeno. Tut možeš uviděti vse slova ktore imajemo https://gorlatoff.github.io/fraznik.html")
 
-
+isv.transliteracija(".ру 5", 'kirilicna_zamena')
 
 async def sendmessage(ctx, public, the_message):
     id_server = False
@@ -201,7 +209,7 @@ async def sendmessage(ctx, public, the_message):
     else:
         await channel.send( the_message)
         return True
-
+isv.transliteracija(".ру 6", 'kirilicna_zamena')
 
 import urllib.parse
 def nicetranslator(word):
@@ -221,6 +229,8 @@ def search_in_sheet(slova, jezycny_kod, sheet):
         return najdene_slova
     return False
 
+
+isv.transliteracija(".ру 7 ", 'kirilicna_zamena')
 @bot.command(aliases = ['id', 'isv', 'мс', 'ms', 'ru', 'be', 'uk', 'ua', 'pl', 'cs', 'cz', 'sk', 'bg', 'mk', 'sr', 'hr', 'sl', 'ру', 'бе', 'ук', 'бг', 'мк', 'ср', 'en', 'de', 'nl', 'eo' ])
 async def najdtislovo(ctx):
     text = ctx.message.content
@@ -306,7 +316,7 @@ async def najdtislovo(ctx):
         await sendmessage(ctx, public, f"Ničto ne jest najdeno. Ale tobě mogut pomogti Glosbe: https://glosbe.com/{jezycny_kod}/{jezyk2}/{ glosbe } i Nicetranslator: {nicetranslator(slova)} `")    
 
 
-
+isv.transliteracija(".ру 8 ", 'kirilicna_zamena')
 
 @bot.command(name = 'wiki')
 async def wiki1(ctx):                 
@@ -364,6 +374,7 @@ async def wiki2(ctx):
         return True
     await sendmessage(ctx, public, result)
 
+isv.transliteracija(".ру 9 ", 'kirilicna_zamena')
 
 @bot.event
 async def on_ready():
@@ -379,5 +390,6 @@ async def obnovjenje(ctx):
     await ctx.send("Dostava slovnika...")
     load_data(update=True)
     await ctx.send("Obnovjenje jest uspěšno skončeno")
+isv.transliteracija(".ру 10 ", 'kirilicna_zamena')
     
 bot.run(settings['token'])

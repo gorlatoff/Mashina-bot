@@ -1,17 +1,19 @@
 import pandas as pd
-import os, re
+import os
+import re
 
-brackets_regex1 = re.compile(" \(.*\)")
-brackets_regex2 = re.compile(" \[.*\]")
+brackets_regex1 = re.compile( " \(.*\)" )
+brackets_regex2 = re.compile( " \[.*\]" )
 
 slovnik_link = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRsEDDBEt3VXESqAgoQLUYHvsA5yMyujzGViXiamY7-yYrcORhrkEl5g6JZPorvJrgMk6sjUlFNT4Km/pub?output=xlsx'
+
 
 def load_slovnik(tabela=slovnik_link, obnoviti=False):
     if obnoviti == False and os.path.isfile("slovnik_words.pkl") and os.path.isfile("slovnik_suggestions.pkl"):
         print("Found 'slovnik_words.pkl' file, using it")
         print("Found 'slovnik_suggestions.pkl' file, using it")
-        dfs = { "words": pd.read_pickle("slovnik_words.pkl"), 
-                "suggestions": pd.read_pickle("slovnik_suggestions.pkl")}
+        dfs = {"words": pd.read_pickle("slovnik_words.pkl"),
+               "suggestions": pd.read_pickle("slovnik_suggestions.pkl")}
         return dfs
 
     print('Dostava slovnika...')
@@ -139,14 +141,8 @@ def prepare_slovnik(slovnik, split=False, transliterate = True):
     return sheet
 
 
-slovnik_loaded = load_slovnik()   
-words = prepare_slovnik(slovnik_loaded['words']) 
-
-
 def filtr_contain(stroka, jezyk, sheet):
     return sheet[ sheet[jezyk].str.contains(stroka) == True].copy()
-
-
 
 def iskati(stroka, jezyk, sheet):
     result = sheet[ sheet[jezyk].apply( lambda text: stroka in text.split(', '))]
