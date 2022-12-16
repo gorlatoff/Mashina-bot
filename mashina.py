@@ -5,8 +5,6 @@ import discord
 from discord.ext import commands
 
 
-
-
 def load_data( update):
     global slovnik_loaded, words, suggestions, discord_fraznik, korpus_loaded, words_general 
 
@@ -87,10 +85,8 @@ def embed_korpus(i):
         korpus['isv'][i] = "_____"
 
     embed.add_field(name=f"{korpus['isv'][i]}\n", value=f"{kartka} ", inline=False)
-    # embed.set_footer(text = "Ako li hčeš pomogti v rabotě nad tabeloju, piši do koristnika @Neudržima Mašina Dobra")
+    embed.set_footer(text = "Ako li hčeš pomogti v rabotě nad tabeloju, piši do koristnika @Neudržima Mašina Dobra")
     return embed
-
-isv.transliteracija(".ру 1", 'kirilicna_zamena')
 
 def embed_words_list(najdene_slova, text):
     embed = discord.Embed()
@@ -121,8 +117,6 @@ def embed_discord_list(i, tabela):
             embed.add_field(name=f"{ col }\n", value=f"{tabela[col][i]} ", inline=False)
     return embed
 
-
-isv.transliteracija(".ру 2", 'kirilicna_zamena')
 
 def commands_reader(text):
     text = str.replace(text,'  ', ' ')
@@ -209,7 +203,6 @@ async def sendmessage(ctx, public, the_message):
     else:
         await channel.send( the_message)
         return True
-isv.transliteracija(".ру 6", 'kirilicna_zamena')
 
 import urllib.parse
 def nicetranslator(word):
@@ -230,7 +223,6 @@ def search_in_sheet(slova, jezycny_kod, sheet):
     return False
 
 
-isv.transliteracija(".ру 7 ", 'kirilicna_zamena')
 @bot.command(aliases = ['id', 'isv', 'мс', 'ms', 'ru', 'be', 'uk', 'ua', 'pl', 'cs', 'cz', 'sk', 'bg', 'mk', 'sr', 'hr', 'sl', 'ру', 'бе', 'ук', 'бг', 'мк', 'ср', 'en', 'de', 'nl', 'eo' ])
 async def najdtislovo(ctx):
     text = ctx.message.content
@@ -316,8 +308,6 @@ async def najdtislovo(ctx):
         await sendmessage(ctx, public, f"Ničto ne jest najdeno. Ale tobě mogut pomogti Glosbe: https://glosbe.com/{jezycny_kod}/{jezyk2}/{ glosbe } i Nicetranslator: {nicetranslator(slova)} `")    
 
 
-isv.transliteracija(".ру 8 ", 'kirilicna_zamena')
-
 @bot.command(name = 'wiki')
 async def wiki1(ctx):                 
     text = ctx.message.content
@@ -374,8 +364,6 @@ async def wiki2(ctx):
         return True
     await sendmessage(ctx, public, result)
 
-isv.transliteracija(".ру 9 ", 'kirilicna_zamena')
-
 @bot.event
 async def on_ready():
     print("Bot jest gotovy")
@@ -390,6 +378,5 @@ async def obnovjenje(ctx):
     await ctx.send("Dostava slovnika...")
     load_data(update=True)
     await ctx.send("Obnovjenje jest uspěšno skončeno")
-isv.transliteracija(".ру 10 ", 'kirilicna_zamena')
     
 bot.run(settings['token'])
