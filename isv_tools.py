@@ -92,37 +92,17 @@ def transliteracija(text, lang):
     return text
     
     
-transliteracija('text', 'kir_to_lat')
-
-# Oddaljaje space'y ako li one sut v početku teksta
-def despace(s):
-    if s and s[0] == ' ':
-        return s.replace(' ', '')
-    return s
-
 def cell_normalization(cell, jezyk):
     cell = str(cell)
-    cell = str.replace( cell, '!', '')
-    cell = str.replace( cell, '#', '')
+    cell = cell.replace( '!', '')
+    cell = cell.replace( '#', '')
+    cell = cell.replace( ';', ',')
     cell = cell.lower()
+    cell = cell.strip()
     cell = transliteracija(cell, jezyk)
     return cell
 
-def symbols_normalization(cell):
-    cell = str(cell)
-    cell = str.replace( cell, '+', '' )     
-    cell = str.replace( cell, '^', '' ) 
-    cell = str.replace( cell, '$', '' )  
-    cell = str.replace( cell, '?', '' )  
-    cell = str.replace( cell, '@', '' )    
-    cell = str.replace( cell, '-', '' )
-    cell = str.replace( cell, '!', '' )    
-    cell = str.replace( cell, '#', '' )
-    cell = str.replace( cell, '/', '' )
-    cell = str.replace( cell, '\\', '' )                
-    return cell
-
-def prepare_slovnik(slovnik, split=False, transliterate = True):
+def prepare_slovnik(slovnik, split=False, transliterate=True):
     sheet = slovnik.copy()
     langs = list((set(slovnik.columns) & set(LANGS) ))
     for lang in langs:
@@ -132,16 +112,16 @@ def prepare_slovnik(slovnik, split=False, transliterate = True):
         sheet[lang] = sheet[lang].str.replace(brackets_regex1, "")
         sheet[lang] = sheet[lang].str.replace(brackets_regex2, "")
         sheet[lang] = sheet[lang].apply(lambda x: cell_normalization(x, lang))
-        sheet[lang] = sheet[lang].apply(lambda x: despace(x))   
-        if transliterate == True:
+        if transliterate:
             sheet[lang] = sheet[lang].apply(lambda x: transliteracija(x, lang))        
-        if split == True:
+        if split:
             sheet[lang] = sheet[lang].str.split(", ").apply(lambda x: x)
     sheet['isv'] = sheet['isv'].str.replace("!", "").str.replace("#", "").str.lower()
     return sheet
 
 
 def filtr_contain(stroka, jezyk, sheet):
+    stroka = re.escape(stroka)
     return sheet[ sheet[jezyk].str.contains(stroka) == True].copy()
 
 def iskati(stroka, jezyk, sheet):
@@ -162,7 +142,7 @@ def in_dict(stroka, jezyk, sheet):
     if sheet.empty:
         return False
     wordslist = sheet['isv'].tolist()
-    return words_gluer(wordslist)
+    return ", ".join(wordslist)
 
 def is_in_dict(stroka, jezyk, sheet):
     sheet1 = filtr_contain(stroka, jezyk, sheet)
@@ -171,15 +151,16 @@ def is_in_dict(stroka, jezyk, sheet):
         return False
     return True
 
-def words_gluer(arr):
-    glued = ''
-    if not arr:
-        return False
-    for word in arr[:-1]:
-        glued = glued + word + ", "
-    return glued + arr[-1]
 
-
+def search_in_sheet(slova, jezycny_kod, sheet):
+    sheet = filtr_contain( slova, jezycny_kod, sheet )  
+    najdene_slova = iskati(slova, jezycny_kod, sheet)
+    if najdene_slova:
+        return najdene_slova           
+    najdene_slova = iskati_slovo(slova, jezycny_kod, sheet)
+    if najdene_slova:
+        return najdene_slova
+    return False
 
 
 

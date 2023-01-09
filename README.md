@@ -6,7 +6,7 @@
 `.ср разумети`, i tako dalje
 
 Tut jest spis možlivyh jezykov i jih kodov:
-`isv` medžuslovjansky, `en` anglijsky, `ru` russky, `be` bělorussky, `uk` ukrajinsky, `pl` poljsky, `cs` češsky, `sk` slovačsky, `bg` bulgarsky, `mk` makedonsky, `sr` srbsky, `hr` hrvatsky, `sl` slovensky, `cu` staroslovjansky, `csb` kašubsky, `dsb` dolnolužičsky, `hsb` gornolužičsky, `de` němečsky, `nl` niderlandsky, `eo` esperanto.
+`isv` medžuslovjansky, `en` anglijsky, `ru` russky, `be` bělorussky, `uk` ukrajinsky, `pl` poljsky, `cs` češsky, `sk` slovačsky, `bg` bulgarsky, `mk` makedonsky, `sr` srbsky, `hr` hrvatsky, `sl` slovensky.
 
 **Da by pokazati slovo po jego ID:**
 `.id 474`

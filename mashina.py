@@ -1,41 +1,23 @@
 import isv_tools as isv
 from work_with_wiki import *
 from bot_config import *
+import bots
 import discord
 from discord.ext import commands
 
 
-def load_data( update):
+def load_data(update):
     global slovnik_loaded, words, suggestions, discord_fraznik, korpus_loaded, words_general 
 
     slovnik_loaded = isv.load_slovnik(obnoviti=update)   
     words = isv.prepare_slovnik(slovnik_loaded['words']) 
     suggestions = isv.prepare_slovnik(slovnik_loaded['suggestions']) 
     discord_fraznik = isv.load_discord_fraznik()
-    
     korpus_link = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz8l3w4h--36bUS-5plpkkVLnSFmCPIB3WnpDYRer87eirVVMYfI-ZDbp3WczyL2G5bOSXKty2MpOY/pub?output=xlsx'    
     korpus_loaded = isv.load_sheet(tabela_name="korpus", sheet_names=['words (general)'], tabela=korpus_link, obnoviti= update )
     words_general = isv.prepare_slovnik(korpus_loaded['words (general)'])
 
-
 load_data(update=False)
-
-def formatizer(slovo):
-    if slovo[-1] == ' ':
-        slovo = slovo[0:-1]
-        
-    if '!' not in slovo[0:1]:
-        return f" {slovo}"
-    if '! ' == slovo[0:2]:
-        slovo = str.replace(slovo, '! ', '!')
-
-    slovo = slovo[1:len(slovo)]
-
-    return f" *{slovo}*"
-    
-
-def link_na_slovnik(i):
-    return f"https://docs.google.com/spreadsheets/d/1N79e_yVHDo-d026HljueuKJlAAdeELAiPzdFzdBuKbY/edit#gid=1987833874&range={i+2}:{i+2}"
 
 
 def embed_words(i):
@@ -44,10 +26,10 @@ def embed_words(i):
     kartka = ""
  
     for col in columns:
-        kartka = kartka + f"**`{col}` **{ formatizer(words[col][i]) }\n" 
+        kartka = kartka + f"**`{col}` **{ bots.formatizer(words[col][i]) }\n" 
     
-    embed = discord.Embed( title=f"{i+2} v slovniku ", url = link_na_slovnik(i) )
-    embed.add_field(name=f"{ formatizer( words['isv'][i] )}\n", value=f"{kartka} ", inline=False)
+    embed = discord.Embed( title=f"{i+2} v slovniku ", url = bots.link_na_slovo(i, "words") )
+    embed.add_field(name=f"{ bots.formatizer( words['isv'][i] )}\n", value=f"{kartka} ", inline=False)
     embed.set_footer(text = f"ID: {words['id'][i]}")
     return embed
 
@@ -58,9 +40,9 @@ def embed_suggestions(i):
     kartka = ""
 
     for col in columns:
-        kartka = kartka + f"**`{col}` **{ formatizer(suggestions[col][i]) }\n" 
+        kartka = kartka + f"**`{col}` **{ bots.formatizer(suggestions[col][i]) }\n" 
     
-    embed = discord.Embed( title=f"{i+2} v spisu novyh slov ", url = f"https://docs.google.com/spreadsheets/d/1N79e_yVHDo-d026HljueuKJlAAdeELAiPzdFzdBuKbY/edit#gid=1226657383&range={i+2}:{i+2}")
+    embed = discord.Embed( title=f"{i+2} v spisu novyh slov ", url = bots.link_na_slovo(i, "suggestions"))
 
     if suggestions['isv'][i] == " ":
         suggestions['isv'][i] = "_____"
@@ -77,7 +59,7 @@ def embed_korpus(i):
     kartka = ''
 
     for col in columns:
-        kartka = kartka + f"**`{col}` **{ formatizer(korpus[col][i]) }\n" 
+        kartka = kartka + f"**`{col}` **{ bots.formatizer(korpus[col][i]) }\n" 
     
     embed = discord.Embed( title=f"{i+2} v korpusu slov", url = f"https://docs.google.com/spreadsheets/d/1rBG7brwbG4pR1j8_eVZapFZUSdaegSVjDH2V6Oqy00A/edit#gid=281935577&range={i+2}:{i+2}")
 
@@ -88,25 +70,7 @@ def embed_korpus(i):
     embed.set_footer(text = "Ako li hčeš pomogti v rabotě nad tabeloju, piši do koristnika @Neudržima Mašina Dobra")
     return embed
 
-def embed_words_list(najdene_slova, text):
-    embed = discord.Embed()
-    result = "\n\n"
-    if len(najdene_slova) == 1:
-        i = najdene_slova[0]
-        word_id = f"`.id {slovnik_loaded['words']['id'][i]}` "
-        result = f"{word_id}" + slovnik_loaded['words']['isv'][i] + "\n"
-        embed.add_field(name="Imamo jedino", value=f"{result}" )
-        return embed        
-    for i in najdene_slova:
-        word_id = f"`.id {slovnik_loaded['words']['id'][i]}` "
-        new_word = f"{word_id}" + slovnik_loaded['words']['isv'][i] + "\n"
-        if len(result) + len(new_word) < 600:
-            result = result + new_word
-        else:
-            embed.set_footer(text = f"I tako dalje....")
-            break           
-    embed.add_field(name=f"Najdeno {len(najdene_slova)} slov(a)", value=result )    
-    return embed
+
 
 def embed_discord_list(i, tabela):
     embed = discord.Embed( title="Rezultat iz Discord fraznika:", url='https://docs.google.com/spreadsheets/d/1lxLtsJIi-MjimKok7iXHEaAhUFsICq9ePZPPWWCmcBE/edit#gid=0')
@@ -118,27 +82,8 @@ def embed_discord_list(i, tabela):
     return embed
 
 
-def commands_reader(text):
-    text = str.replace(text,'  ', ' ')
-    jezycny_kod = text.split(" ")[0]
-    jezycny_kod = str.replace(jezycny_kod,'.', '')
-    jezycny_kod = isv.transliteracija(jezycny_kod, 'kirilicna_zamena')
-
-    start = len(text.split(" ")[0] + " ")
-    slova = text[start:len(text)]
-    slova = str.replace(slova,'!', '')
-    slova = slova.lower()    
-    if jezycny_kod == "isv":
-        slova = isv.transliteracija(slova, 'kir_to_lat')
-    slova = isv.transliteracija(slova, jezycny_kod)
-    print(f"jezyk = '{jezycny_kod}', slova = '{slova}'")
-    return {"slova": slova, "jezyk": jezycny_kod}
-
-isv.transliteracija(".ру 3", 'kirilicna_zamena')
-
 bot = commands.Bot(command_prefix = settings['prefix']) 
 from pouky import *
-isv.transliteracija(".ру 4", 'kirilicna_zamena')
 
 @bot.command(name = "fraznik", aliases = ['фразник'])
 async def najdti_vo_frazniku(ctx):
@@ -174,8 +119,6 @@ async def najdti_vo_frazniku(ctx):
         return True
     return await ctx.send( "Ničto ne jest najdeno. Tut možeš uviděti vse slova ktore imajemo https://gorlatoff.github.io/fraznik.html")
 
-isv.transliteracija(".ру 5", 'kirilicna_zamena')
-
 async def sendmessage(ctx, public, the_message):
     id_server = False
     try:
@@ -204,36 +147,37 @@ async def sendmessage(ctx, public, the_message):
         await channel.send( the_message)
         return True
 
-import urllib.parse
-def nicetranslator(word):
-    url = urllib.parse.quote_plus(word)
-    return f"https://nicetranslator.com/translation/ru,be,uk,pl,cs,sk,bg,mk,sr,hr,sl/{url}"
-
-from random import randrange
-
-
-def search_in_sheet(slova, jezycny_kod, sheet):
-    sheet = isv.filtr_contain( slova, jezycny_kod, sheet )  
-    najdene_slova = isv.iskati(slova, jezycny_kod, sheet)
-    if najdene_slova:
-        return najdene_slova           
-    najdene_slova = isv.iskati_slovo(slova, jezycny_kod, sheet)
-    if najdene_slova:
-        return najdene_slova
-    return False
+def embed_words_list(najdene_slova):
+    embed = discord.Embed()
+    result = "\n\n"
+    for i in najdene_slova:
+        word_id = f"`.id {slovnik_loaded['words']['id'][i]}` "
+        new_word = f"{word_id}" + slovnik_loaded['words']['isv'][i] + "\n"
+        if len(result) + len(new_word) < 600:
+            result = result + new_word
+        else:
+            embed.set_footer(text = "I tako dalje....")
+            break           
+    embed.add_field(name=f"Najdeno {len(najdene_slova)} slov(a)", value=result )    
+    return embed
 
 
-@bot.command(aliases = ['id', 'isv', 'мс', 'ms', 'ru', 'be', 'uk', 'ua', 'pl', 'cs', 'cz', 'sk', 'bg', 'mk', 'sr', 'hr', 'sl', 'ру', 'бе', 'ук', 'бг', 'мк', 'ср', 'en', 'de', 'nl', 'eo' ])
+@bot.command( aliases = ['id', 'isv', 'мс', 'ms', 'ru', 'be', 'uk', 'ua', 'pl', 'cs', 'cz', 'sk', 'bg', 'mk', 'sr', 'hr', 'sl', 'ру', 'бе', 'ук', 'бг', 'мк', 'ср', 'en', 'de', 'nl', 'eo' ] )
 async def najdtislovo(ctx):
     text = ctx.message.content
 
     public = False
     if " --public" in text:
-        text = str.replace(text,' --public', '')
+        text = text.replace(' --public', '')
         public = True
 
-    jezycny_kod = commands_reader(text)['jezyk']
-    slova = commands_reader(text)['slova']    
+    if " --test" in text:
+        text = text.replace(' --test', '')
+    else: 
+        return False
+
+    jezycny_kod = bots.commands_reader(text)['jezyk']
+    slova = bots.commands_reader(text)['slova']    
 
     if (slova == "") or (slova == " "):
         await ctx.send( f"jezyk: {jezycny_kod}, slovo: ne jest zadano" ) 
@@ -259,54 +203,52 @@ async def najdtislovo(ctx):
         najdene_slova = isv.iskati(slova, jezycny_kod, najdene_slova_contain)
         if najdene_slova:
             if len(najdene_slova) > limit:
-                await sendmessage(ctx, public, embed_words_list(najdene_slova, "Jest prěmnogo sinonimov:" ) )
+                await sendmessage(ctx, public, embed_words_list(najdene_slova ) )
                 return True
             for i in najdene_slova:
                 await sendmessage(ctx, public, embed_words(i) )
             return True
      
         najdene_slova = isv.iskati_slovo(slova, jezycny_kod, najdene_slova_contain) 
-        if najdene_slova: 
-            await sendmessage(ctx, public, embed_words_list(najdene_slova, "Imamo jedino:" ))
+        if najdene_slova:
+            if len(najdene_slova) == 1: 
+                await sendmessage(ctx, public, embed_words(i) )
+            else:
+                await sendmessage(ctx, public, embed_words_list(najdene_slova))
         elif len(slova) == 1:
             pass
         else:
             najdene_slova = najdene_slova_contain.index
-            await sendmessage(ctx, public, embed_words_list(najdene_slova, "Imamo jedino:" ))
+            if len(najdene_slova) == 1:
+                await sendmessage(ctx, public, embed_words(najdene_slova[0]) )
+            else:
+                await sendmessage(ctx, public, embed_words_list(najdene_slova ))
 
     if jezycny_kod == 'id':
         slova = slova.upper()      
       
-    najdene_slova_suggestions = search_in_sheet(slova, jezycny_kod, suggestions)
+    najdene_slova_suggestions = isv.search_in_sheet(slova, jezycny_kod, suggestions)
     if najdene_slova_suggestions:
         for i in najdene_slova_suggestions:
             await ctx.send(embed=embed_suggestions(i))  
             return True 
     
-    najdene_slova_korpus = search_in_sheet( slova, jezycny_kod, words_general )  
+    najdene_slova_korpus = isv.search_in_sheet( slova, jezycny_kod, words_general )  
     if najdene_slova_korpus: 
         for i in najdene_slova_korpus:
             await ctx.send(embed=embed_korpus(i))
             return True   
     
-    if najdene_slova_contain.empty and not najdene_slova_suggestions:
-        if jezycny_kod == "isv" or jezycny_kod == "id":
-            await sendmessage(ctx, public, "Nažalost, ničto ne jest najdeno.")
-            return False   
-
-        wiki = wiki_titles(jezycny_kod, slova)
-        if wiki != False:
-            await sendmessage(ctx, public, wiki )
-            return True
-        
-        jezyky_slovnika_slav = "ru uk pl cs bg sr".split(" ")
-        jezyky_slovnika_slav.remove(jezycny_kod)
-        jezyk2 = jezyky_slovnika_slav[ randrange( 0,len(jezyky_slovnika_slav) ) ]
-        
-        glosbe = slova.replace(" ", "%20")
-        
-        await sendmessage(ctx, public, f"Ničto ne jest najdeno. Ale tobě mogut pomogti Glosbe: https://glosbe.com/{jezycny_kod}/{jezyk2}/{ glosbe } i Nicetranslator: {nicetranslator(slova)} `")    
-
+    if najdene_slova_contain.empty:
+        if jezycny_kod not in ['isv', 'id']:
+            wiki = wiki_titles(jezycny_kod, slova)
+            if wiki != False:
+                await sendmessage(ctx, public, wiki )
+                return True
+            await sendmessage(ctx, public, f"Ničto ne jest najdeno. Ale tobě mogut pomogti Glosbe: {bots.glosbe(slova, jezycny_kod)} i Nicetranslator: {bots.nicetranslator(slova)} `")  
+            return False  
+        await sendmessage(ctx, public, f"Ničto ne jest najdeno.")    
+    
 
 @bot.command(name = 'wiki')
 async def wiki1(ctx):                 
@@ -373,10 +315,28 @@ async def pozdravjenje(ctx):                    # Создаём функцию 
     author = ctx.message.author                 # Объявляем переменную author и записываем туда информацию об авторе.
     await ctx.send(f'Zdrav, {author.mention}!')     
 
-@bot.command(aliases = ['obnoviti'])
+@bot.command(aliases = ['obnoviti', 'обновити'])
 async def obnovjenje(ctx):
-    await ctx.send("Dostava slovnika...")
-    load_data(update=True)
-    await ctx.send("Obnovjenje jest uspěšno skončeno")
+
+    text = ctx.message.content
     
+    if "slovnik" in text:
+        await ctx.send("Dostava slovnika...")     
+        slovnik_loaded = isv.load_slovnik(obnoviti=True)   
+        words = isv.prepare_slovnik(slovnik_loaded['words']) 
+        suggestions = isv.prepare_slovnik(slovnik_loaded['suggestions']) 
+    elif "fraznik" in text:
+        await ctx.send("Dostava fraznika...")             
+        discord_fraznik = isv.load_discord_fraznik()
+    elif "korpus" in text:
+        await ctx.send("Dostava korpusa slov...")     
+        korpus_link = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz8l3w4h--36bUS-5plpkkVLnSFmCPIB3WnpDYRer87eirVVMYfI-ZDbp3WczyL2G5bOSXKty2MpOY/pub?output=xlsx'    
+        korpus_loaded = isv.load_sheet(tabela_name="korpus", sheet_names=['words (general)'], tabela=korpus_link, obnoviti=True )
+        words_general = isv.prepare_slovnik(korpus_loaded['words (general)'])
+    else:
+        await ctx.send("Dostava slovnika...")      
+        isv.load_data(update=True)
+    await ctx.send("Obnovjenje jest uspěšno skončeno")
+
+ 
 bot.run(settings['token'])
