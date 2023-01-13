@@ -1,16 +1,22 @@
 import telebot
 
-bot = telebot.TeleBot("----private_token----", parse_mode="Markdown") # You can set parse_mode by default. HTML or MARKDOWN
+bot = telebot.TeleBot("5701607715:AAGVDGLpCa7l4NnOEpOxRalCAAJh51WU1z8", parse_mode="Markdown") # You can set parse_mode by default. HTML or MARKDOWN
 
 import isv_tools as isv
 from work_with_wiki import *
 from bot_config import *
 import bots
 
-
+slovnik_loaded = False
+words = False 
+suggestions = False
+discord_fraznik = False
+korpus_loaded = False
+words_general = False
 
 def load_data(update):
     global slovnik_loaded, words, suggestions, discord_fraznik, korpus_loaded, words_general 
+       
     slovnik_loaded = isv.load_slovnik(obnoviti=update)   
     words = isv.prepare_slovnik(slovnik_loaded['words']) 
     suggestions = isv.prepare_slovnik(slovnik_loaded['suggestions']) 
@@ -19,7 +25,7 @@ def load_data(update):
     korpus_loaded = isv.load_sheet(tabela_name="korpus", sheet_names=['words (general)'], tabela=korpus_link, obnoviti= update )
     words_general = isv.prepare_slovnik(korpus_loaded['words (general)'])
 
-load_data(update=False)
+load_data(False)
 
 
 def words_list(najdene_slova):
@@ -114,6 +120,7 @@ def najdti(message):
 
 @bot.message_handler(commands = ["obnoviti", "обновити"])
 def obnoviti(message):
+    global slovnik_loaded, words, suggestions, discord_fraznik, korpus_loaded, words_general 
     text = message.text
     print(text)
     bot.send_message(message.chat.id, text)     

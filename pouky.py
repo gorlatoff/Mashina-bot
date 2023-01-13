@@ -223,7 +223,7 @@ async def fpouka_klaviatury(ctx):
 
 
 
-@bot.command(name = 'pomoč', aliases = ['pomoc', 'komandy', 'Komandy', 'commands', 'Commands'])
+@bot.command(name = 'pomoč', aliases = ['pomoc','prikazy', 'komandy', 'Komandy', 'commands', 'Commands'])
 async def pomogti(ctx):
     text = """
 **Iskati po jezyku:**
@@ -245,8 +245,10 @@ Tut jest spis možlivyh jezykov i jih kodov:
 `.linky1`, `.linky2`, `.pasivno_učenje`, `.kako_učiti`, `.slovnik1`, `.slovnik2`, `.o_frazniku`, `.o_botu`, `.keyboards`
 
 **Da by obnoviti dane:**
+`.obnoviti slovnik` - obnoviti jedino oficialny slovnik 
 `.obnoviti fraznik` - obnoviti naš fraznik
-`.obnoviti` - obnoviti slovnik
+`.obnoviti korpus` - obnoviti korpus slov
+`.obnoviti` - obnoviti vsečto
     """
     await ctx.send(text) 
 
@@ -263,7 +265,7 @@ Govorimo jedino medžuslovjanskym jezykom vo vsih kanalah kromě:
  <#879448593587646464>
  <#879448623534997524>
  <#879456264004980746>
- <#889133830424887307> (tutoj kanal ima tredy/větvy za vsaky slovjansky jezyk)
+ <#1056182079945183232> (tutoj kanal ima tredy/větvy za vsaky slovjansky jezyk)
 
 O politikě možete govoriti jedino medžuslovjanskym jezykom i jedino v kanalu <#879453948631744513>
     """
@@ -275,7 +277,7 @@ O politikě možete govoriti jedino medžuslovjanskym jezykom i jedino v kanalu 
  <#879448593587646464>
  <#879448623534997524>
  <#879456264004980746>
- <#889133830424887307> (тутој канал има треды/вєтвы за всакы словјанскы језык)
+ <#1056182079945183232> (тутој канал има треды/вєтвы за всакы словјанскы језык)
 
 О политикє можете говорити једино меджусловјанскым језыком и једино в каналу <#879453948631744513>
     """

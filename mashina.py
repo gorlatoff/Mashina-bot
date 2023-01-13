@@ -5,10 +5,16 @@ import bots
 import discord
 from discord.ext import commands
 
+slovnik_loaded = False
+words = False 
+suggestions = False
+discord_fraznik = False
+korpus_loaded = False
+words_general = False
 
 def load_data(update):
     global slovnik_loaded, words, suggestions, discord_fraznik, korpus_loaded, words_general 
-
+       
     slovnik_loaded = isv.load_slovnik(obnoviti=update)   
     words = isv.prepare_slovnik(slovnik_loaded['words']) 
     suggestions = isv.prepare_slovnik(slovnik_loaded['suggestions']) 
@@ -17,8 +23,7 @@ def load_data(update):
     korpus_loaded = isv.load_sheet(tabela_name="korpus", sheet_names=['words (general)'], tabela=korpus_link, obnoviti= update )
     words_general = isv.prepare_slovnik(korpus_loaded['words (general)'])
 
-load_data(update=False)
-
+load_data(False)
 
 def embed_words(i):
     columns = "en ru be uk pl cs sk bg mk sr hr sl".split(" ")
@@ -171,10 +176,10 @@ async def najdtislovo(ctx):
         text = text.replace(' --public', '')
         public = True
 
-    if " --test" in text:
-        text = text.replace(' --test', '')
-    else: 
-        return False
+    # if " --test" in text:
+    #     text = text.replace(' --test', '')
+    # else: 
+    #     return False
 
     jezycny_kod = bots.commands_reader(text)['jezyk']
     slova = bots.commands_reader(text)['slova']    
@@ -315,28 +320,33 @@ async def pozdravjenje(ctx):                    # Создаём функцию 
     author = ctx.message.author                 # Объявляем переменную author и записываем туда информацию об авторе.
     await ctx.send(f'Zdrav, {author.mention}!')     
 
-@bot.command(aliases = ['obnoviti', 'обновити'])
+@bot.command(aliases = ['obnovi', 'обнови'])
 async def obnovjenje(ctx):
-
+    global slovnik_loaded, words, suggestions, discord_fraznik, korpus_loaded, words_general      
     text = ctx.message.content
-    
     if "slovnik" in text:
-        await ctx.send("Dostava slovnika...")     
+        await ctx.send("Dostava slovnika...")  
         slovnik_loaded = isv.load_slovnik(obnoviti=True)   
         words = isv.prepare_slovnik(slovnik_loaded['words']) 
         suggestions = isv.prepare_slovnik(slovnik_loaded['suggestions']) 
-    elif "fraznik" in text:
-        await ctx.send("Dostava fraznika...")             
+        await ctx.send("Obnovjenje slovnika jest uspěšno skončeno")
+        return True
+    if "fraznik" in text:
+        await ctx.send("Dostava fraznika...")  
         discord_fraznik = isv.load_discord_fraznik()
-    elif "korpus" in text:
-        await ctx.send("Dostava korpusa slov...")     
+        await ctx.send("Obnovjenje fraznika jest uspěšno skončeno")
+        return True
+    if "korpus" in text:
+        await ctx.send("Dostava korpusa slov...")    
         korpus_link = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz8l3w4h--36bUS-5plpkkVLnSFmCPIB3WnpDYRer87eirVVMYfI-ZDbp3WczyL2G5bOSXKty2MpOY/pub?output=xlsx'    
         korpus_loaded = isv.load_sheet(tabela_name="korpus", sheet_names=['words (general)'], tabela=korpus_link, obnoviti=True )
         words_general = isv.prepare_slovnik(korpus_loaded['words (general)'])
-    else:
-        await ctx.send("Dostava slovnika...")      
-        isv.load_data(update=True)
+        await ctx.send("Obnovjenje korpusa jest uspěšno skončeno")
+        return True
+    await ctx.send("Ide obnovjenje...")
+    load_data(True)
     await ctx.send("Obnovjenje jest uspěšno skončeno")
+
 
  
 bot.run(settings['token'])

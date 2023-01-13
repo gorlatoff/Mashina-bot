@@ -162,7 +162,24 @@ def search_in_sheet(slova, jezycny_kod, sheet):
         return najdene_slova
     return False
 
-
+# def load_data(update):
+#     global slovnik_loaded, words, suggestions, discord_fraznik, korpus_loaded, words_general 
+       
+#     slovnik_loaded = load_slovnik(obnoviti=update)   
+#     words = prepare_slovnik(slovnik_loaded['words']) 
+#     suggestions = prepare_slovnik(slovnik_loaded['suggestions']) 
+#     discord_fraznik = load_discord_fraznik()
+#     korpus_link = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz8l3w4h--36bUS-5plpkkVLnSFmCPIB3WnpDYRer87eirVVMYfI-ZDbp3WczyL2G5bOSXKty2MpOY/pub?output=xlsx'    
+#     korpus_loaded = load_sheet(tabela_name="korpus", sheet_names=['words (general)'], tabela=korpus_link, obnoviti= update )
+#     words_general = prepare_slovnik(korpus_loaded['words (general)'])
+#     return {    
+#             "slovnik_loaded": slovnik_loaded,
+#             "words": words,
+#             "suggestions": suggestions,
+#             "discord_fraznik": discord_fraznik,
+#             "korpus_loaded": korpus_loaded,
+#             "words_general": words_general
+#     }
 
 
 # slovnik_loaded = load_slovnik()   
