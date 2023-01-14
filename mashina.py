@@ -157,7 +157,7 @@ def embed_words_list(najdene_slova):
     result = "\n\n"
     for i in najdene_slova:
         word_id = f"`.id {slovnik_loaded['words']['id'][i]}` "
-        new_word = f"{word_id}" + slovnik_loaded['words']['isv'][i] + "\n"
+        new_word = slovnik_loaded['words']['isv'][i] + f" ({word_id})" + "\n"
         if len(result) + len(new_word) < 600:
             result = result + new_word
         else:
