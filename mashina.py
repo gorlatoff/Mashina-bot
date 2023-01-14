@@ -320,10 +320,11 @@ async def pozdravjenje(ctx):                    # Создаём функцию 
     author = ctx.message.author                 # Объявляем переменную author и записываем туда информацию об авторе.
     await ctx.send(f'Zdrav, {author.mention}!')     
 
-@bot.command(aliases = ['obnovi', 'обнови'])
+@bot.command(aliases = ['obnoviti', 'обновити', 'obnovi', 'обнови'])
 async def obnovjenje(ctx):
     global slovnik_loaded, words, suggestions, discord_fraznik, korpus_loaded, words_general      
     text = ctx.message.content
+    text = isv.transliteracija(text, 'kir_to_lat')
     if "slovnik" in text:
         await ctx.send("Dostava slovnika...")  
         slovnik_loaded = isv.load_slovnik(obnoviti=True)   

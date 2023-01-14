@@ -19,8 +19,14 @@ Tut jest spis možlivyh jezykov i jih kodov:
 `.linky1`, `.linky2`, `.pasivno_učenje`, `.kako_učiti`, `.slovnik1`, `.slovnik2`, `.o_frazniku`, `.o_botu`, `.keyboards`
 
 **Da by obnoviti dane:**
+
+`.obnoviti slovnik` - obnoviti jedino oficialny slovnik 
+
 `.obnoviti fraznik` - obnoviti naš fraznik
-`.obnoviti` - obnoviti slovnik
+
+`.obnoviti korpus` - obnoviti korpus slov
+
+`.obnoviti` - obnoviti vsečto
 
 
 ## Za rabotu koda:

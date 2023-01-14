@@ -1,3 +1,12 @@
+ 
+
+from wikipediaapi import Wikipedia
+
+wiki_wiki = Wikipedia('ru')
+page_test = wiki_wiki.page('тувалу')
+page_test.summary
+
+
 
 from wikipediaapi import Wikipedia
 # SLOVJANSKE_VIKI = "ru be be-x-old uk rue pl hsb dsb cs sk bg mk sr hr sh sl cu".split(" ")
