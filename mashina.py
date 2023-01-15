@@ -72,7 +72,7 @@ def embed_korpus(i):
         korpus['isv'][i] = "_____"
 
     embed.add_field(name=f"{korpus['isv'][i]}\n", value=f"{kartka} ", inline=False)
-    embed.set_footer(text = "Ako li hčeš pomogti v rabotě nad tabeloju, piši do koristnika @Neudržima Mašina Dobra")
+    embed.set_footer(text = "Ako li hčeš pomogti v rabotě nad tabeloju, piši do @Neudržima Mašina Dobra")
     return embed
 
 
