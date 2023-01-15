@@ -118,29 +118,33 @@ def najdti(message):
 
 
 
-@bot.message_handler(commands = ["obnoviti", "обновити"])
+@bot.message_handler(commands = ["obnoviti", "обновити", "obnovi", "обнови"])
 def obnoviti(message):
     global slovnik_loaded, words, suggestions, discord_fraznik, korpus_loaded, words_general 
     text = message.text
-    print(text)
-    bot.send_message(message.chat.id, text)     
+
     if "slovnik" in text:
-        bot.send_message(message.chat.id, "Dostava slovnika...")     
+        bot.send_message(message.chat.id, "Dostava slovnika...")  
         slovnik_loaded = isv.load_slovnik(obnoviti=True)   
         words = isv.prepare_slovnik(slovnik_loaded['words']) 
         suggestions = isv.prepare_slovnik(slovnik_loaded['suggestions']) 
-    elif "fraznik" in text:
-        bot.send_message(message.chat.id,"Dostava fraznika...")             
+        bot.send_message(message.chat.id, "Obnovjenje slovnika jest uspěšno skončeno")
+        return True
+    if "fraznik" in text:
+        bot.send_message(message.chat.id, "Dostava fraznika...")  
         discord_fraznik = isv.load_discord_fraznik()
-    elif "korpus" in text:
-        bot.send_message(message.chat.id,"Dostava korpusa slov...")     
+        bot.send_message(message.chat.id, "Obnovjenje fraznika jest uspěšno skončeno")
+        return True
+    if "korpus" in text:
+        bot.send_message(message.chat.id, "Dostava korpusa slov...")    
         korpus_link = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz8l3w4h--36bUS-5plpkkVLnSFmCPIB3WnpDYRer87eirVVMYfI-ZDbp3WczyL2G5bOSXKty2MpOY/pub?output=xlsx'    
         korpus_loaded = isv.load_sheet(tabela_name="korpus", sheet_names=['words (general)'], tabela=korpus_link, obnoviti=True )
         words_general = isv.prepare_slovnik(korpus_loaded['words (general)'])
-    else:
-        bot.send_message(message.chat.id, "Dostava slovnika...")      
-        load_data(update=True)
-    bot.send_message( message.chat.id,"Obnovjenje jest uspěšno skončeno")
+        bot.send_message(message.chat.id, "Obnovjenje korpusa jest uspěšno skončeno")
+        return True
+    bot.send_message(message.chat.id, "Ide obnovjenje...")
+    load_data(True)
+    bot.send_message(message.chat.id, "Obnovjenje jest uspěšno skončeno")
 
 
 
