@@ -1,17 +1,4 @@
- 
-
 from wikipediaapi import Wikipedia
-
-wiki_wiki = Wikipedia('ru')
-page_test = wiki_wiki.page('тувалу')
-page_test.summary
-
-
-
-from wikipediaapi import Wikipedia
-SLOVJANSKE_VIKI = "ru be be-x-old uk rue pl hsb dsb cs sk bg mk sr hr sh sl cu".split(" ")
-slovjanske_viki = "ru be uk pl cs sk bg mk sr hr sl".split(" ")
-
 
 def sentence_splitter(s):
     bracket = 0
@@ -23,42 +10,32 @@ def sentence_splitter(s):
         if (s[i] == ".") and (bracket == 0):
             return str(s[0:(i+1)])
     return s.split("\n")[0]
-        
-        
+
 def wiki_titles(lang, text):
-    lang = lang.replace('be-tarask', 'be-x-old')
+    LANGLIST = "ru be be-x-old uk rue pl hsb dsb cs sk bg mk sr hr sh sl cu".split(" ")
     wiki_wiki = Wikipedia(lang)
     page_test = wiki_wiki.page(text)
-    if (page_test.summary == '') or (page_test.langlinks == {}):
+    if page_test.summary == '':
         return False
-    result = f"Rezultaty iz Wikipedije:\n `{lang}` {page_test.title}" + "\n"
-    if lang in SLOVJANSKE_VIKI:
-        SLOVJANSKE_VIKI.remove(lang)  
-    for k in SLOVJANSKE_VIKI:
-        try:
-            result = result + f"`{k}` {page_test.langlinks[k].title}" + "\n"
-        except:
-            return False
+    result = f"Rezultaty iz Wikipedije:\n`{lang}` {page_test.title} \n"
+    najdene_jezyky = [i for i in LANGLIST if i in page_test.langlinks.keys()]
+    for k in najdene_jezyky:
+        result = result + f"`{k}` {page_test.langlinks[k].title}" + "\n"
     return result
-
 
 def wiki_text(lang, text):
+    langlist = "ru be uk pl cs sk bg mk sr hr sl".split(" ")
     wiki_wiki = Wikipedia(lang)
     page_test = wiki_wiki.page(text)
-    if (page_test.summary == '') or (page_test.langlinks == {}):
+    if page_test.summary == '':
         return False
-    result = f"Rezultaty iz Wikipedije:\n `{lang}` {page_test.title}: "
+    result = f"Rezultaty iz Wikipedije:\n`{lang}` {page_test.title}: "
     result = result + str( sentence_splitter(page_test.summary) ) + "\n"
-    if lang in slovjanske_viki:
-        slovjanske_viki.remove(lang) 
-    for k in slovjanske_viki:
-        try:
-            result = result + f"`{k}` {page_test.langlinks[k].title}: "
-            result = result + str( sentence_splitter(page_test.langlinks[k].summary) ) + "\n"
-        except:
-            return False
+    najdene_jezyky = [i for i in langlist if i in page_test.langlinks.keys()]
+    for k in najdene_jezyky:
+        result = result + f"`{k}` {page_test.langlinks[k].title}: "
+        result = result + str( sentence_splitter(page_test.langlinks[k].summary) ) + "\n"
     return result
-
 
 wikis = [
  'ab',

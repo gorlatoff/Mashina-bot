@@ -1,6 +1,6 @@
 import telebot
 
-bot = telebot.TeleBot("------token------", parse_mode="Markdown") # You can set parse_mode by default. HTML or MARKDOWN
+bot = telebot.TeleBot("--token--", parse_mode="Markdown") # You can set parse_mode by default. HTML or MARKDOWN
 
 import isv_tools as isv
 from work_with_wiki import *
@@ -26,6 +26,15 @@ def load_data(update):
     words_general = isv.prepare_slovnik(korpus_loaded['words (general)'])
 
 load_data(False)
+
+
+def handler(event, _):
+    message = telebot.types.Update.de_json(event['body'])
+    bot.process_new_updates([message])
+    return {
+        'statusCode': 200,
+        'body': '!',
+    }
 
 
 def words_list(najdene_slova):
@@ -71,13 +80,13 @@ def najdti(message):
                 bot.send_message(message.chat.id, words_list(najdene_slova) )
                 return True
             for i in najdene_slova:
-                bot.send_message(message.chat.id, markdown_kartka(i, slovnik_loaded['words'], 'words'))
+                bot.send_message(message.chat.id, markdown_kartka(i, slovnik_loaded['words']))
             return True
 
         najdene_slova = isv.iskati_slovo(slova, jezycny_kod, najdene_slova_contain) 
         if najdene_slova: 
             if len(najdene_slova) == 1: 
-                bot.send_message(message.chat.id, markdown_kartka(najdene_slova[0], slovnik_loaded['words'], 'words')  )
+                bot.send_message(message.chat.id, markdown_kartka(najdene_slova[0], slovnik_loaded['words'])  )
             else:
                 bot.send_message(message.chat.id, words_list(najdene_slova) )
         elif len(slova) == 1:
@@ -85,7 +94,7 @@ def najdti(message):
         else:
             najdene_slova = najdene_slova_contain.index
             if len(najdene_slova) == 1:
-                bot.send_message(message.chat.id, markdown_kartka(najdene_slova[0], slovnik_loaded['words'], 'words')  )
+                bot.send_message(message.chat.id, markdown_kartka(najdene_slova[0], slovnik_loaded['words'])  )
             else:
                 bot.send_message(message.chat.id, words_list(najdene_slova) )
             
@@ -96,13 +105,13 @@ def najdti(message):
     najdene_slova_suggestions = isv.search_in_sheet(slova, jezycny_kod, suggestions)
     if najdene_slova_suggestions:
         for i in najdene_slova_suggestions:
-            bot.send_message(message.chat.id, markdown_kartka(i, slovnik_loaded['suggestions'], 'suggestions'))
+            bot.send_message(message.chat.id, markdown_kartka(i, slovnik_loaded['suggestions']))
             return True 
     
     najdene_slova_korpus = isv.search_in_sheet( slova, jezycny_kod, words_general )  
     if najdene_slova_korpus: 
         for i in najdene_slova_korpus:
-            bot.send_message(message.chat.id, markdown_kartka(i, korpus_loaded['words (general)'], 'korpus'))
+            bot.send_message(message.chat.id, markdown_kartka(i, korpus_loaded['words (general)']))
             return True   
     
     if najdene_slova_contain.empty:

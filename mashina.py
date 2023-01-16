@@ -217,7 +217,7 @@ async def najdtislovo(ctx):
         najdene_slova = isv.iskati_slovo(slova, jezycny_kod, najdene_slova_contain) 
         if najdene_slova:
             if len(najdene_slova) == 1: 
-                await sendmessage(ctx, public, embed_words(i) )
+                await sendmessage(ctx, public, embed_words(najdene_slova[0]) )
             else:
                 await sendmessage(ctx, public, embed_words_list(najdene_slova))
         elif len(slova) == 1:
