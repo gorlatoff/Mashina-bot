@@ -14,6 +14,7 @@ def embed_pouka1():
 """
     embed = discord.Embed()
     embed.add_field(name="Važne linky", value=f"{text} ", inline=False)
+    embed.set_footer(text = ".linky1")
     return embed 
 
 
@@ -41,6 +42,7 @@ V něktoryh slučajah jest potrěbno pogleděti na druge jezyky, da by uznati op
     embed.add_field(name="O etimologičnyh literah", value=f"{text2} ", inline=False)
     embed.add_field(name="Slovniky slovjanskyh jezykov", value=f"{text3} ", inline=False)
     embed.set_image(url="https://media.discordapp.net/attachments/791699552649609219/907562028158312468/TRhFUp9.png")
+    embed.set_footer(text = ".linky2")
     return embed
 
 
@@ -62,6 +64,7 @@ def embed_pouky3():
 
     embed.add_field(name="Media", value=f"{media} ", inline=False)
     embed.add_field(name="Teksty", value=f"{teksty} ", inline=False)
+    embed.set_footer(text = ".pasivno_učenje")
     return embed
 
 
@@ -78,6 +81,7 @@ Pročitaj nemnogo [o gramatikě](http://steen.free.fr/interslavic/grammar.html) 
     embed = discord.Embed()
 
     embed.add_field(name="KAKO SĘ UČITI", value=f"{teksty} ", inline=False)
+    embed.set_footer(text = ".kako_učiti")
     return embed
 
 
@@ -95,6 +99,7 @@ Takože tam sut mnogo drugyh možnostij, kako opcionalne jezyky :flag_nl: :flag_
 
     embed.add_field(name="Nastavjenja slovnika", value=f"{teksty} ", inline=False)
     embed.set_image(url="https://i.imgur.com/ANXqoQv.png")
+    embed.set_footer(text = ".slovnik1")
     return embed
 
 
@@ -125,6 +130,7 @@ Ne zabyvaj, že slovnik ima funkciju "sklonjenja/conjugation"! Vsaku možlivu fo
     embed.add_field(name="O formah slov:", value=f"{tekst3} ", inline=True)
 
     embed.set_image(url="https://i.imgur.com/kxpV3B6.jpg")
+    embed.set_footer(text = ".slovnik2")
     return embed
 
 
@@ -136,6 +142,7 @@ Takože možno prěględěti [naš fraznik](https://gorlatoff.github.io/fraznik.
 """
     embed = discord.Embed()
     embed.add_field(name="O frazniku", value=f"{tekst} ", inline=False)
+    embed.set_footer(text = ".o_frazniku")
     return embed
 
 
@@ -157,6 +164,7 @@ p.s. Vy jeste prěględali jeste vsi možlive varianty i kako prědtym ničto ne
     embed.add_field(name="O botu", value=f"{tekst} ", inline=False)
     embed.add_field(name="O slovnikah", value=f"{tekst2} ", inline=False)
     embed.set_image(url="https://i.imgur.com/xKRnA94.jpg")
+    embed.set_footer(text = ".o_botu")
     return embed
 
 
@@ -178,6 +186,7 @@ Narodne klaviatury, ktore imajut vse potrěbne simboly: **češska**, **slovačs
     embed = discord.Embed()
     embed.add_field(name="MEDŽUSLOVJANSKE KLAVIATURY", value=f"{text1} ", inline=False)
     embed.add_field(name="Prěporučenja za različne sistemy:", value=f"{text2} ", inline=False)
+    embed.set_footer(text = ".klaviatury")
     return embed
 
 

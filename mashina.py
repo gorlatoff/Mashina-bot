@@ -166,6 +166,11 @@ def embed_words_list(najdene_slova):
     embed.add_field(name=f"Najdeno {len(najdene_slova)} slov(a)", value=result )    
     return embed
 
+def iskati_fraznik(najdene_slova):
+    najdeno_list = [ words['isv'][i] for i in najdene_slova ]
+    najdeno_v_discord_listu = [ isv.iskati(word, 'Vse varianty v MS', discord_fraznik['tabela']) for word in najdeno_list]
+    indexes = set([a for b in najdeno_v_discord_listu for a in b])
+    return indexes
 
 @bot.command( aliases = ['id', 'isv', 'мс', 'ms', 'ru', 'be', 'uk', 'ua', 'pl', 'cs', 'cz', 'sk', 'bg', 'mk', 'sr', 'hr', 'sl', 'ру', 'бе', 'ук', 'бг', 'мк', 'ср', 'en', 'de', 'nl', 'eo' ] )
 async def najdtislovo(ctx):
@@ -176,11 +181,6 @@ async def najdtislovo(ctx):
         text = text.replace(' --public', '')
         public = True
 
-    # if " --test" in text:
-    #     text = text.replace(' --test', '')
-    # else: 
-    #     return False
-
     jezycny_kod = bots.commands_reader(text)['jezyk']
     slova = bots.commands_reader(text)['slova']    
 
@@ -188,26 +188,17 @@ async def najdtislovo(ctx):
         await ctx.send( f"jezyk: {jezycny_kod}, slovo: ne jest zadano" ) 
         return False
 
-    limit = 4
-    najdeno_v_discord_listu = []
-    
-    if jezycny_kod == 'isv':
-        najdeno_v_discord_listu = isv.iskati_discord('Vse varianty v MS', slova, discord_fraznik['tabela'])
-    if jezycny_kod == 'en': 
-        najdeno_v_discord_listu = isv.iskati_discord('Slovo na anglijskom', slova, discord_fraznik['tabela'])
-    
-    if najdeno_v_discord_listu:
-        for i in najdeno_v_discord_listu:
-            await ctx.send( embed=embed_discord_list(i, discord_fraznik['tabela'] ) )    
-        limit = 3 
-
-    print(f"lang {jezycny_kod}, text {slova}")
     najdene_slova_contain = isv.filtr_contain( slova, jezycny_kod, words )  
 
     if not najdene_slova_contain.empty:
         najdene_slova = isv.iskati(slova, jezycny_kod, najdene_slova_contain)
         if najdene_slova:
-            if len(najdene_slova) > limit:
+            print(najdene_slova)
+            discord_word_list = iskati_fraznik(najdene_slova)
+            for i in discord_word_list:
+                await ctx.send( embed=embed_discord_list(i, discord_fraznik['tabela'] ) )
+                
+            if len(najdene_slova) > 3:
                 await sendmessage(ctx, public, embed_words_list(najdene_slova ) )
                 return True
             for i in najdene_slova:
@@ -228,6 +219,7 @@ async def najdtislovo(ctx):
                 await sendmessage(ctx, public, embed_words(najdene_slova[0]) )
             else:
                 await sendmessage(ctx, public, embed_words_list(najdene_slova ))
+
 
     if jezycny_kod == 'id':
         slova = slova.upper()      

@@ -1,6 +1,6 @@
 import telebot
 
-bot = telebot.TeleBot("--token--", parse_mode="Markdown") # You can set parse_mode by default. HTML or MARKDOWN
+bot = telebot.TeleBot("5701607715:AAGVDGLpCa7l4NnOEpOxRalCAAJh51WU1z8", parse_mode="Markdown") # You can set parse_mode by default. HTML or MARKDOWN
 
 import isv_tools as isv
 from work_with_wiki import *
@@ -10,7 +10,7 @@ import bots
 slovnik_loaded = False
 words = False 
 suggestions = False
-discord_fraznik = False
+# discord_fraznik = False
 korpus_loaded = False
 words_general = False
 
@@ -20,7 +20,7 @@ def load_data(update):
     slovnik_loaded = isv.load_slovnik(obnoviti=update)   
     words = isv.prepare_slovnik(slovnik_loaded['words']) 
     suggestions = isv.prepare_slovnik(slovnik_loaded['suggestions']) 
-    discord_fraznik = isv.load_discord_fraznik()
+    # discord_fraznik = isv.load_discord_fraznik()
     korpus_link = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz8l3w4h--36bUS-5plpkkVLnSFmCPIB3WnpDYRer87eirVVMYfI-ZDbp3WczyL2G5bOSXKty2MpOY/pub?output=xlsx'    
     korpus_loaded = isv.load_sheet(tabela_name="korpus", sheet_names=['words (general)'], tabela=korpus_link, obnoviti= update )
     words_general = isv.prepare_slovnik(korpus_loaded['words (general)'])

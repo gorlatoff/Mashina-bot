@@ -19,6 +19,8 @@ def wiki_titles(lang, text):
         return False
     result = f"Rezultaty iz Wikipedije:\n`{lang}` {page_test.title} \n"
     najdene_jezyky = [i for i in LANGLIST if i in page_test.langlinks.keys()]
+    if not najdene_jezyky:
+        return False
     for k in najdene_jezyky:
         result = result + f"`{k}` {page_test.langlinks[k].title}" + "\n"
     return result
@@ -32,6 +34,8 @@ def wiki_text(lang, text):
     result = f"Rezultaty iz Wikipedije:\n`{lang}` {page_test.title}: "
     result = result + str( sentence_splitter(page_test.summary) ) + "\n"
     najdene_jezyky = [i for i in langlist if i in page_test.langlinks.keys()]
+    if not najdene_jezyky:
+        return False
     for k in najdene_jezyky:
         result = result + f"`{k}` {page_test.langlinks[k].title}: "
         result = result + str( sentence_splitter(page_test.langlinks[k].summary) ) + "\n"

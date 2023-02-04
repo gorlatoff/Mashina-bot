@@ -137,12 +137,12 @@ def iskati_slovo(slovo, jezyk, sheet):
 
     
 def in_dict(stroka, jezyk, sheet):
-    sheet = filtr_contain(stroka, jezyk, sheet)
-    sheet = iskati(stroka, jezyk, sheet)
-    if sheet.empty:
-        return False
-    wordslist = sheet['isv'].tolist()
-    return ", ".join(wordslist)
+    najdeno = filtr_contain(stroka, jezyk, sheet)
+    najdeno = iskati(stroka, jezyk, najdeno)
+    if not najdeno:
+        return ' '
+    result = [sheet['isv'][i] for i in najdeno]
+    return", ".join(result)
 
 def is_in_dict(stroka, jezyk, sheet):
     sheet1 = filtr_contain(stroka, jezyk, sheet)
