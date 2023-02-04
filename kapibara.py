@@ -1,6 +1,6 @@
 import telebot
 
-bot = telebot.TeleBot("5701607715:AAGVDGLpCa7l4NnOEpOxRalCAAJh51WU1z8", parse_mode="Markdown") # You can set parse_mode by default. HTML or MARKDOWN
+bot = telebot.TeleBot("--token--", parse_mode="Markdown") # You can set parse_mode by default. HTML or MARKDOWN
 
 import isv_tools as isv
 from work_with_wiki import *
