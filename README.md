@@ -3,41 +3,35 @@
 **Iskati po jezyku:**
 `.en dog` 
 `.ms krugly stol` 
-`.ср разумети`, i tako dalje
+`.sr razumeti`, i tako dalje
 
-Tut jest spis možlivyh jezykov i jih kodov:
-`isv` medžuslovjansky, `en` anglijsky, `ru` russky, `be` bělorussky, `uk` ukrajinsky, `pl` poljsky, `cs` češsky, `sk` slovačsky, `bg` bulgarsky, `mk` makedonsky, `sr` srbsky, `hr` hrvatsky, `sl` slovensky.
+Možlive jezyky i jih kody:
+`isv` medžuslovjansky, `en` anglijsky, `ru` russky, `be` bělorussky, `uk` ukrajinsky, `pl` poljsky, `cs` češsky, `sk` slovačsky, `bg` bulgarsky, `mk` makedonsky, `sr` srbsky, `hr` hrvatsky, `sl` slovenečsky.
 
 **Da by pokazati slovo po jego ID:**
 `.id 474`
 
-**Iskati vo wiki:**
+**Iskati vo viki:**
 `.wiki en katana`
-`.wiki_summary ru собака`
+`.wiki_summary ru sobaka`
 
-**Spis komand za pokazyvanje pouk:**
+**Prikazy za pokazyvanje pouk:**
 `.linky1`, `.linky2`, `.pasivno_učenje`, `.kako_učiti`, `.slovnik1`, `.slovnik2`, `.o_frazniku`, `.o_botu`, `.keyboards`
 
 **Da by obnoviti dane:**
-
-`.obnoviti slovnik` - obnoviti jedino oficialny slovnik 
-
-`.obnoviti fraznik` - obnoviti naš fraznik
-
-`.obnoviti korpus` - obnoviti korpus slov
-
-`.obnoviti` - obnoviti vsečto
-
+`.obnovi words` — obnoviti jedino oficialny slovnik
+`.obnovi suggestions` — obnoviti tabelu prědloženij do slovnika
+`.obnovi fraznik` — obnoviti naš fraznik
+`.obnovi wiki list` — obnoviti korpus slov (prva tabela)
+`.obnovi cognates` — obnoviti korpus slov
+`.obnovi` — obnoviti vsečto
 
 ## Za rabotu koda:
 
 Potrěbne biblioteky:
 
 ```bash
-pip install pandas 
-pip install discord.py-fork
-pip install openpyxl 
-pip install Wikipedia-API
+pip install PyYAML polars disnake RapidFuzz lemmagen3 pyTelegramBotAPI regex aiohttp
 ```
 
 Takože za svojego bota potrěbno stvoriti Discord aplikaciju:

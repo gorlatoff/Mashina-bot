@@ -290,8 +290,9 @@ def mashina_search(slova: str, lang: str):
             messages.append(wiki_result)
             return messages
     answer = f"My gledali jesmo v slovniku, neoficialnyh spisah slov, i daže v Wikipediji, i ne jesmo našli ničto. Poprobuj najdti podobne ili srodne rěči, ili stvori novo slovo sam. V analizovanju pomogut [Glosbe.com](<{bots.glosbe(slova, lang)}>) ili [Nicetranslator](<{bots.nicetranslator(lang)}>)."
-    messages.append()
+    messages.append(answer)
     return messages
+
 
 if __name__ == "__main__":
     search_in_phrasebook('привет', 'ru')
