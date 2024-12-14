@@ -1,195 +1,357 @@
-import pandas as pd
+import asyncio
 import os
 import re
+import polars as pl
+from rapidfuzz import fuzz, process
+import bots
+import transliteration as transl
+import lang_detect
+import lemmatizer
+import wiki
 
-brackets_regex1 = re.compile( " \(.*\)" )
-brackets_regex2 = re.compile( " \[.*\]" )
-
-slovnik_link = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRsEDDBEt3VXESqAgoQLUYHvsA5yMyujzGViXiamY7-yYrcORhrkEl5g6JZPorvJrgMk6sjUlFNT4Km/pub?output=xlsx'
-
-
-def load_slovnik(tabela=slovnik_link, obnoviti=False):
-    if obnoviti == False and os.path.isfile("slovnik_words.pkl") and os.path.isfile("slovnik_suggestions.pkl"):
-        print("Found 'slovnik_words.pkl' file, using it")
-        print("Found 'slovnik_suggestions.pkl' file, using it")
-        dfs = {"words": pd.read_pickle("slovnik_words.pkl"),
-               "suggestions": pd.read_pickle("slovnik_suggestions.pkl")}
-        return dfs
-
-    print('Dostava slovnika...')
-    dfs = pd.read_excel(io=tabela, engine='openpyxl', sheet_name=['words', 'suggestions'])
-        
-    dfs['suggestions'].columns = dfs['suggestions'].iloc[0]
-    dfs['suggestions'].reindex(dfs['suggestions'].index.drop(0))
-    dfs['suggestions'].rename(columns={'ids': 'id'}, inplace=True)
-        
-    for i in ['words', 'suggestions']:
-        for col in dfs[i].columns:
-            dfs[i][col] = dfs[i][col].fillna(' ').astype(str)
-        
-    dfs['words'].to_pickle("slovnik_words.pkl")
-    dfs['suggestions'].to_pickle("slovnik_suggestions.pkl")
-
-    return dfs
-
-
-def load_sheet(tabela_name, sheet_names: list, tabela, obnoviti):
-    ispath = [os.path.isfile(f"{tabela_name}_{name}.pkl") for name in sheet_names]
-    if obnoviti == False and (False not in ispath):
-        dfs = {}
-        for name in sheet_names:
-            sheetname = f'{tabela_name}_{name}.pkl'
-            dfs.update({name: pd.read_pickle(f'{sheetname}')})
-        return dfs
-    print(f'Dostava tabely {tabela_name}...')
-    dfs = pd.read_excel(io=tabela, engine='openpyxl', sheet_name=sheet_names)
-    print('Gotovo.')    
-    for name in sheet_names:
-        for col in dfs[name].columns:
-            dfs[name][col] = dfs[name][col].fillna(' ').astype(str)
-        dfs[name].to_pickle(f"{tabela_name}_{name}.pkl")
-    return dfs
-
-def load_discord_fraznik():
-    discord_list = pd.read_excel(io='https://docs.google.com/spreadsheets/d/e/2PACX-1vTIevV03tPoLIILAx4DqHH6QetiiYb13xMiQ7HMvvleWLjveoJ6uayNIDLd0cKUMj9TtNsl2XDsZR8w/pub?output=xlsx',
-                    engine='openpyxl',
-                    sheet_name=['tabela', 'nove slova'])
-    for i in ['tabela', 'nove slova']:
-        for name in discord_list[i].columns:
-            discord_list[i][name] = discord_list[i][name].fillna(" ").astype(str)    
-    return discord_list
-
-def iskati_discord(jezyk, slovo, sheet):
-    najdene_slova = []
-    for i in range(0, len(sheet.index)):      
-        cell = str( sheet[jezyk][i] )
-        cell = cell.lower()
-        cell = re.sub(r'\[.*?\]', '', cell)
-        if jezyk == 'Vse varianty v MS':
-            cell = transliteracija(cell, 'isv')
-        if slovo in str.split( cell, ', ' ):
-            najdene_slova.append(i)
-    return najdene_slova
-
-LANGS = "isv en ru uk be pl cs sk bg mk sr hr sl de nl eo".split(' ')
-
-trans_tables = { 'isv': 'ć-č ś-s ź-z ŕ-r ĺ-l ľ-l ń-n ť-t ť-t ď-d ď-d đ-dž ȯ-o ė-e č-č š-š ž-ž ě-ě е̌-ě ě-e å-a ę-e ų-u',
-                 'ru': 'ё-е а́-а е́-е и́-и о́-о у́-у ы́-ы э́-э ю́-ю я́-я',
-                 'uk': 'ґ-г а́-а е́-е и́-и о́-о у́-у ы́-ы є́-є ю́-ю я́-я і́-і ї́-ї',  
-                 'be': 'ґ-г а́-а е́-е и́-и о́-о у́-у ы́-ы э́-э ю́-ю я́-я і́-і',  
-                 'bg': 'ѝ-и',
-                 'mk': 'ѝ-и ѐ-е',
-                 'kir_to_lat': 'ньј-ńj ь- а-a ӑ-å б-b в-v ў-v г-g ґ-g д-d дж-dž ђ-dž е-e є-ě ѣ-ě ж-ž з-z и-i ј-j ї-ji й-j к-k л-l љ-lj м-m н-n њ-nj о-o п-p р-r с-s т-t у-u ф-f х-h ц-c ч-č ш-š щ-šč ъ-ȯ ы-y ю-ju я-ja ё-e ѫ-ų ѧ-ę ћ-ć ѥ-je ꙑ-y',     
-                 'kirilicna_zamena': 'ру-ru бе-be ук-uk бг-bg мк-mk ср-sr ua-uk cz-cs ms-isv мс-isv',
+sheet_links = {
+  'words': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRsEDDBEt3VXESqAgoQLUYHvsA5yMyujzGViXiamY7-yYrcORhrkEl5g6JZPorvJrgMk6sjUlFNT4Km/pub?output=csv',
+  'Cognates': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz8l3w4h--36bUS-5plpkkVLnSFmCPIB3WnpDYRer87eirVVMYfI-ZDbp3WczyL2G5bOSXKty2MpOY/pub?gid=86109375&single=true&output=csv',
+  'Wiki list': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz8l3w4h--36bUS-5plpkkVLnSFmCPIB3WnpDYRer87eirVVMYfI-ZDbp3WczyL2G5bOSXKty2MpOY/pub?gid=281935577&single=true&output=csv',
+  'suggestions': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS8scL0kxJY7rgLC-2iaG_XmbOI72sbfmd63YhcvuFgc9KDDFpRyvIWwfcr6yHxE7Uk0coCaePfozL-/pub?gid=1226657383&single=true&output=csv',
+  'fraznik': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTIevV03tPoLIILAx4DqHH6QetiiYb13xMiQ7HMvvleWLjveoJ6uayNIDLd0cKUMj9TtNsl2XDsZR8w/pub?gid=0&single=true&output=csv',
+#   'CogNet': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz8l3w4h--36bUS-5plpkkVLnSFmCPIB3WnpDYRer87eirVVMYfI-ZDbp3WczyL2G5bOSXKty2MpOY/pub?gid=1725053439&single=true&output=csv',
 }
 
-def transliteracija(text, lang):
-    if lang not in trans_tables.keys():
-        return text
-    for i in trans_tables[lang].split(' '):
-        letters = i.split('-')
-        text = text.replace(letters[0], letters[1])
-    return text
-    
-    
-def cell_normalization(cell, jezyk):
-    cell = str(cell)
-    cell = cell.replace( '!', '')
-    cell = cell.replace( '#', '')
-    cell = cell.replace( ';', ',')
+fraznik_link = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTIevV03tPoLIILAx4DqHH6QetiiYb13xMiQ7HMvvleWLjveoJ6uayNIDLd0cKUMj9TtNsl2XDsZR8w/pub?gid=0&single=true&output=csv',
+
+sheets = {key: False for key in sheet_links.keys()}
+columns = [ 'id', 'isv', 'partOfSpeech', 'en', 'ru', 'be', 'uk', 'pl', 'cs', 'sk', 'bg', 'mk', 'sr', 'hr', 'sl', 'frequency']
+langs = "isv en ru uk be pl cs sk bg mk sr hr sl".split(' ')
+
+brackets_regex1 = re.compile( r" \(.*\)" )
+brackets_regex2 = re.compile( r" \[.*\]" )
+
+
+def cell_normalization(cell: str, lang: str) -> str:
+    cell = cell.replace( '!', '').replace( '#', '')
+    cell = re.sub(brackets_regex1, "", cell)
+    cell = re.sub(brackets_regex2, "", cell)
     cell = cell.lower()
     cell = cell.strip()
-    cell = transliteracija(cell, jezyk)
+    cell = transl.transliteration(cell, lang)
     return cell
 
-def prepare_slovnik(slovnik, split=False, transliterate=True):
-    sheet = slovnik.copy()
-    langs = list((set(slovnik.columns) & set(LANGS) ))
+
+def prepare_slovnik(sheet, sheetname: str):
+    if sheetname == 'fraznik':
+        sheet = sheet.with_columns([
+            (sheet['Vse varianty v MS'].map_elements(lambda x: cell_normalization(x, 'isv'), return_dtype=pl.Utf8)).alias(f'isv')
+        ])
+        return sheet
     for lang in langs:
-        assert sheet[sheet[lang].astype(str).apply(lambda x: "((" in sorted(x))].empty
-    for lang in langs:
-        slovnik[lang] = slovnik[lang].apply(lambda x: str(x) ) # в переводчике была проблема, пока эту строчку не добавил
-        sheet[lang] = sheet[lang].str.replace(brackets_regex1, "")
-        sheet[lang] = sheet[lang].str.replace(brackets_regex2, "")
-        sheet[lang] = sheet[lang].apply(lambda x: cell_normalization(x, lang))
-        if transliterate:
-            sheet[lang] = sheet[lang].apply(lambda x: transliteracija(x, lang))        
-        if split:
-            sheet[lang] = sheet[lang].str.split(", ").apply(lambda x: x)
-    sheet['isv'] = sheet['isv'].str.replace("!", "").str.replace("#", "").str.lower()
+        print(lang)
+        sheet = sheet.with_columns([
+            (sheet[lang].map_elements(lambda x: cell_normalization(x, lang), return_dtype=pl.Utf8)).alias(f'{lang}_normalized')
+        ])
+#       normalizations[f'{lang}_normalized'] = sheet[lang].map_elements(lambda x: cell_normalization(x, lang))
+#   sheet = sheet.with_columns(**normalizations)
+    sheet = sheet.with_columns(pl.Series(name="index", values=range(1, len(sheet) + 1))) 
     return sheet
 
 
-def filtr_contain(stroka, jezyk, sheet):
-    stroka = re.escape(stroka)
-    return sheet[ sheet[jezyk].str.contains(stroka) == True].copy()
+def load_sheet(tabela_name: str, update: bool):
+    tabela_name_parquet = tabela_name+".parquet"
+    if update or not os.path.isfile(tabela_name_parquet):
+        print(f'Sheet {tabela_name} is downloading ...')
+        df = pl.read_csv(sheet_links[tabela_name], separator=",", ignore_errors=True, dtypes={k: str for k in columns} ).fill_null(' ')
 
-def iskati(stroka, jezyk, sheet):
-    result = sheet[ sheet[jezyk].apply( lambda text: stroka in text.split(', '))]
-    return result.index.values.tolist()
+        if tabela_name != 'fraznik': 
+            cols = [i for i in df.columns if (i in columns) ]
+            df = df.select(cols)
 
-def iskati_slovo(slovo, jezyk, sheet):
-    najdene_slova = []
-    for i, stroka in sheet.iterrows():    
-        if slovo in str.split( re.sub(r'[^\w\s]','', stroka[jezyk]) ):
-            najdene_slova.append(i)
-    return najdene_slova
+        df = prepare_slovnik(df, tabela_name)      
+        df.write_parquet(tabela_name_parquet)
+        return df
+    print( f"Found {tabela_name_parquet} file, using it")
+    return pl.read_parquet(tabela_name_parquet)
 
-    
-def in_dict(stroka, jezyk, sheet):
-    najdeno = filtr_contain(stroka, jezyk, sheet)
-    najdeno = iskati(stroka, jezyk, najdeno)
-    if not najdeno:
-        return ' '
-    result = [sheet['isv'][i] for i in najdeno]
-    return", ".join(result)
+def load_all_sheets(sheet_names=sheets.keys(), update=False):
+    for sheetname in sheet_names:
+        sheets[sheetname] = load_sheet(sheetname, update)
+    return sheets
 
-def is_in_dict(stroka, jezyk, sheet):
-    sheet1 = filtr_contain(stroka, jezyk, sheet)
-    sheet2 = iskati(stroka, jezyk, sheet1)
-    if sheet2.empty:
-        return False
+sheets = load_all_sheets()
+
+def update_sheets(text: str):
+    global sheets
+    text = transl.transliteration(text, 'kir_to_lat')
+    sheets_to_update = [s for s in sheet_links.keys() if (s.lower() in text)]
+    if not sheets_to_update:
+        sheets = load_all_sheets(update=True)
+        return True
+    for sheetname in sheets_to_update:
+        print(f"Dostava tabely {sheetname}...")
+        sheets[sheetname] = load_sheet(sheetname, True)
+    print("Obnovjenje jest skončeno")
     return True
 
 
-def search_in_sheet(slova, jezycny_kod, sheet):
-    sheet = filtr_contain( slova, jezycny_kod, sheet )  
-    najdene_slova = iskati(slova, jezycny_kod, sheet)
-    if najdene_slova:
-        return najdene_slova           
-    najdene_slova = iskati_slovo(slova, jezycny_kod, sheet)
-    if najdene_slova:
+# update_sheets("obnovi Cognates", sheet_links, sheets)
+
+
+
+def translations_card(row, sheet_name: str):
+    i = row['index'][0]
+    languages = "en ru be uk pl cs sk bg mk sr hr sl".split(" ")
+    word_is_in = {
+    'words': 'v slovniku',
+    'suggestions': 'v spisu novyh slov',
+    'Wiki list': 'v tabelě "Wiki list"',
+    'CogNet': 'v tabelě "CogNet"',
+    'Cognates': 'v tabelě "Cognates"',
+    }
+    title = f"{i+2} {word_is_in[sheet_name]}"
+    output = f"## [{title}](<{bots.link_na_slovo(i, sheet_name)}>)\n\n"
+    output += f"**{ bots.formatizer( row['isv'][0] )}**\n"
+    for col in languages:
+        words = row[col][0]
+        output += f"**`{col}` **{ bots.formatizer(words) }\n"
+    output += f"\n`.id {row['id'][0]}`"
+    return output
+
+
+def words_list_card(sheet, contain = False):
+    result = f"**Najdeno {len(sheet)} slov(a), vy možete vyzvati jih prikazom `.id`:**\n\n"
+    if contain:
+        result = f"**Najdeno {len(sheet)} slov(a):**\n\n"
+    for i in range(0, len(sheet)):
+        new_row = f"{sheet['isv'][i]} (`.id {sheet['id'][i]}`)\n"
+        if len(result) + len(new_row) < 600:
+            result += new_row
+        else:
+            result += "\n*I tako dalje....*"
+            break
+    return result
+
+
+
+def phrasebook_card(i: int, tabela):
+    markdown = "# Rezultat iz [fraznika](https://gorlatoff.github.io/fraznik.html)\n\n"
+    for col in tabela.columns[0:8]:
+        cell = tabela[col][i]
+        if cell != " ":
+            markdown += f"## {col}\n{cell}\n\n"
+    return markdown
+
+def split_by_coma(text: str) -> list:
+    if ";" in text:
+        return text.split("; ")
+    return text.split(", ")
+
+
+def split_and_search(s: str, text: str) -> bool:
+    s = str(s)
+    if ";" in s:
+        return s in text.split("; ")
+    return s in text.split(", ")
+
+
+def filter_contain(s: str, jezyk: str, sheet):
+    sheet = sheet.filter( pl.col(jezyk).str.contains(s) == True )
+    return sheet
+
+
+
+def search(s: str, jezyk: str, sheet):
+    filter_sheet = pl.col(jezyk).map_elements(lambda text: split_and_search(s, text), return_dtype=pl.Boolean)
+    return sheet.filter(filter_sheet)
+
+def search_by_word(s: str, jezyk: str, sheet):
+    return sheet.filter( pl.col(jezyk).str.split(by=r'[^\w]').list.contains(s))
+
+def search_in_sheet(slova: str, lang: str, sheet):
+    sheet = filter_contain( slova, lang, sheet)
+    if sheet.is_empty():
+        return sheet
+    najdene_slova = search( slova, lang, sheet)
+    if not najdene_slova.is_empty():
         return najdene_slova
-    return False
+    najdene_slova = search_by_word(slova, lang, sheet)
+    return najdene_slova
 
-# def load_data(update):
-#     global slovnik_loaded, words, suggestions, discord_fraznik, korpus_loaded, words_general 
-       
-#     slovnik_loaded = load_slovnik(obnoviti=update)   
-#     words = prepare_slovnik(slovnik_loaded['words']) 
-#     suggestions = prepare_slovnik(slovnik_loaded['suggestions']) 
-#     discord_fraznik = load_discord_fraznik()
-#     korpus_link = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRz8l3w4h--36bUS-5plpkkVLnSFmCPIB3WnpDYRer87eirVVMYfI-ZDbp3WczyL2G5bOSXKty2MpOY/pub?output=xlsx'    
-#     korpus_loaded = load_sheet(tabela_name="korpus", sheet_names=['words (general)'], tabela=korpus_link, obnoviti= update )
-#     words_general = prepare_slovnik(korpus_loaded['words (general)'])
-#     return {    
-#             "slovnik_loaded": slovnik_loaded,
-#             "words": words,
-#             "suggestions": suggestions,
-#             "discord_fraznik": discord_fraznik,
-#             "korpus_loaded": korpus_loaded,
-#             "words_general": words_general
-#     }
+def search_in_phrasebook(slova: str, lang: str):
+    sheet = sheets['fraznik']
+    if lang == "isv_normalized":
+        slova = transl.transliteration(slova, 'isv')
+        return search_in_sheet(slova, "isv", sheet)
+    if lang == "en":
+        return search_in_sheet(slova, "Slovo na anglijskom", sheet)
+    isv_translations = search_in_sheet(slova, lang, sheets['words'])
+    if isv_translations.is_empty():
+        return isv_translations
+    isv_words = isv_translations['isv_normalized'].to_list()
+    isv_words = [split_by_coma(text) for text in isv_words]
+    isv_words = [item for sublist in isv_words for item in sublist]
+    results = pl.DataFrame()
+    for isv_word in isv_words:
+        phrasebook_result = search_in_sheet(isv_word, "isv", sheet)
+        results = pl.concat([results, phrasebook_result], how="vertical")
+    return results.unique(maintain_order=True)
+
+def phrasebook(slova: str, lang: str):
+    result = search_in_phrasebook(slova, lang)
+    messages = []
+    if not result.is_empty():
+        for i in range(0, len(result)):
+            card = phrasebook_card(i, result)
+            messages.append(card)
+        return messages
+    return ["Ničto ne jest najdeno. Tut možeš uviděti vsi slova, ktore imajemo https://gorlatoff.github.io/fraznik.html"]
 
 
-# slovnik_loaded = load_slovnik()   
-# words = prepare_slovnik(slovnik_loaded['words'], split=False) 
-# suggestions = prepare_slovnik(slovnik_loaded['suggestions']) 
 
-# najdene_slova_suggestions = iskati("S00002", 'id', suggestions)
+def search_fuzzy(s: str, langs_wordlist: list):
+    results = process.extract(s, langs_wordlist, scorer=fuzz.ratio, score_cutoff=80, limit=6)
+    if not results:
+        return False
+    results = {i[0] for i in results}
+    return list(results)
 
-# contain = filtr_contain("снежный", "ru", words )
 
-# from timeit import timeit
+def sort_by_distance(slova: str, lang: str, sheet):
+    sheet = sheet.with_columns( 
+        pl.col(lang)
+        .map_elements(lambda x: fuzz.ratio(slova, x), return_dtype=pl.Float32)
+        .alias("distance"),
+    )
+    return sheet.sort(["distance"], descending=True)
 
-# timeit(lambda: iskati_slovo("снежный", "ru", contain ), number=1000 )
+
+def mashina_search(slova: str, lang: str):
+    print(slova, lang)
+    messages = []
+
+    lang_normalized = lang + '_normalized'
+    if lang == 'id':
+        lang_normalized = 'id'
+    if lang == 'en':
+        lang_normalized = 'en'
+    if lang == "isv":
+        slova = transl.transliteration(slova, 'kir_to_lat')     
+    slova = transl.transliteration(slova, lang)
+    result = search_in_sheet(slova, lang_normalized, sheets['words'])
+    if not result.is_empty():
+        fraznik_results = search_in_phrasebook(slova, lang_normalized)
+        if not fraznik_results.is_empty():
+            for i in range(0, len(fraznik_results)):
+                messages.append(phrasebook_card(i, fraznik_results))
+        length = len(result)
+        if length <= 3:
+            for i in range(0, len(result)):
+                messages.append(translations_card(result[i:i+1], 'words'))
+            return messages
+        result = sort_by_distance(slova, lang_normalized, result)
+        messages.append(words_list_card(result))
+        return messages
+    result = search_fuzzy(slova, sheets['words'][lang])
+    if result:
+        if len(result) > 1:
+            alternative_variants = f"*{', '.join(result[:-1])}* ili *{result[-1]}*"
+            answer = f"Prividno, slovnik ne imaje slovo *{slova}*. Jeste li vy imali na mysli {alternative_variants}?"
+            messages.append(answer)
+            return messages
+        answer = f"Prividno, slovnik ne imaje slovo *{slova}*. Jeste li vy imali na mysli `.{lang} {result[0]}`?"
+        messages.append(answer)
+        return messages
+    lemma = lemmatizer.slavic_lemmatizer(slova, lang)
+    result = search_in_sheet(lemma, lang_normalized, sheets['words'])
+    if not result.is_empty():
+        messages.append(f"Prividno, slovnik ne imaje slovo *{slova}*. Jeste li vy imali na mysli `.{lang} {lemma}`?")
+        return messages
+    result = filter_contain(slova, lang_normalized, sheets['words'])
+    if not result.is_empty():
+        result = sort_by_distance(slova, lang_normalized, result)
+        messages.append(words_list_card(result, contain=True))
+        return messages
+    optional_sheets = list(sheets.keys())[1:]
+    optional_sheets.remove('fraznik')
+    success = False
+    for sheet_name in optional_sheets:
+        result = search_in_sheet(slova, lang_normalized, sheets[sheet_name])
+        if not result.is_empty():
+            success = True
+            for i in range(0, len(result)):
+                messages.append(translations_card(result[i:i+1], sheet_name))
+    if success:
+        return messages
+    if not lang_detect.language_verify(slova, lang):
+        answer = f"Vaše poslanje ne izgledaje kako tekst na {lang} jezyku, jeste li vy uvěrjeni?\n\nMožlive jezyky i jih kody:\n`isv` medžuslovjansky, `en` anglijsky, `ru` russky, `be` bělorussky, `uk` ukrajinsky, `pl` poljsky, `cs` češsky, `sk` slovačsky, `bg` bulgarsky, `mk` makedonsky, `sr` srbsky, `hr` hrvatsky, `sl` slovensky."
+        messages.append(answer)
+        return messages
+    if lang in wiki.SUPPORTED_WIKIS:
+        wiki_result = asyncio.run(wiki.wiki_titles(lang, slova))
+        if wiki_result:
+            messages.append(wiki_result)
+            return messages
+    answer = f"My gledali jesmo v slovniku, neoficialnyh spisah slov, i daže v Wikipediji, i ne jesmo našli ničto. Poprobuj najdti podobne ili srodne rěči, ili stvori novo slovo sam. V analizovanju pomogut [Glosbe.com](<{bots.glosbe(slova, lang)}>) ili [Nicetranslator](<{bots.nicetranslator(lang)}>)."
+    messages.append()
+    return messages
+
+if __name__ == "__main__":
+    search_in_phrasebook('привет', 'ru')
+    search_fuzzy('млово', 'ru')
+    filter_contain("слово", 'ru', sheets['words'])
+    search("слово", 'ru', sheets['words'])
+    search_by_word("слово", 'ru', sheets['words'])
+    print(search_in_sheet("слово", 'ru', sheets['words']))
+    search_in_sheet("слово", 'ru_normalized', sheets['words'])
+    filter_contain('кaкой-то', 'ru_normalized', sheets['words'])
+    search('983', 'id', sheets['words'])
+    tests = [
+        'млово',
+        'быть',
+        'делaть',
+        'буду',
+        'делaю',    
+        'кaкой-то',  
+        'зa',     
+        'добрый',  
+        'ить',   
+        'тест',  
+        'снежный', 
+        'привет',
+        ]
+    for i in tests:
+        mashina_search(i, 'ru')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
