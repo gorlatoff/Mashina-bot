@@ -19,7 +19,6 @@ sheet_links = {
 }
 
 fraznik_link = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTIevV03tPoLIILAx4DqHH6QetiiYb13xMiQ7HMvvleWLjveoJ6uayNIDLd0cKUMj9TtNsl2XDsZR8w/pub?gid=0&single=true&output=csv',
-
 sheets = {key: False for key in sheet_links.keys()}
 columns = [ 'id', 'isv', 'partOfSpeech', 'en', 'ru', 'be', 'uk', 'pl', 'cs', 'sk', 'bg', 'mk', 'sr', 'hr', 'sl', 'frequency']
 langs = "isv en ru uk be pl cs sk bg mk sr hr sl".split(' ')
@@ -49,8 +48,6 @@ def prepare_slovnik(sheet, sheetname: str):
         sheet = sheet.with_columns([
             (sheet[lang].map_elements(lambda x: cell_normalization(x, lang), return_dtype=pl.Utf8)).alias(f'{lang}_normalized')
         ])
-#       normalizations[f'{lang}_normalized'] = sheet[lang].map_elements(lambda x: cell_normalization(x, lang))
-#   sheet = sheet.with_columns(**normalizations)
     sheet = sheet.with_columns(pl.Series(name="index", values=range(1, len(sheet) + 1))) 
     return sheet
 
@@ -60,11 +57,9 @@ def load_sheet(tabela_name: str, update: bool):
     if update or not os.path.isfile(tabela_name_parquet):
         print(f'Sheet {tabela_name} is downloading ...')
         df = pl.read_csv(sheet_links[tabela_name], separator=",", ignore_errors=True, dtypes={k: str for k in columns} ).fill_null(' ')
-
         if tabela_name != 'fraznik': 
             cols = [i for i in df.columns if (i in columns) ]
             df = df.select(cols)
-
         df = prepare_slovnik(df, tabela_name)      
         df.write_parquet(tabela_name_parquet)
         return df
@@ -76,7 +71,11 @@ def load_all_sheets(sheet_names=sheets.keys(), update=False):
         sheets[sheetname] = load_sheet(sheetname, update)
     return sheets
 
+
 sheets = load_all_sheets()
+sheets['words']['isv_normalized']
+
+
 
 def update_sheets(text: str):
     global sheets
@@ -233,7 +232,7 @@ def mashina_search(slova: str, lang: str):
     if lang == 'en':
         lang_normalized = 'en'
     if lang == "isv":
-        slova = transl.transliteration(slova, 'kir_to_lat')     
+        slova = cell_normalization(slova, 'isv')     
     slova = transl.transliteration(slova, lang)
     result = search_in_sheet(slova, lang_normalized, sheets['words'])
     if not result.is_empty():
