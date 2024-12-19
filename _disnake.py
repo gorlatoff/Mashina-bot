@@ -197,4 +197,4 @@ async def help(ctx):
 async def on_ready():
     print("Bot jest gotovy")
 
-bot.run(settings['token'])
+bot.run(settings['token_discord'])
