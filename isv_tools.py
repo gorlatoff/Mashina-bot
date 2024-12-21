@@ -151,18 +151,19 @@ def split_and_search(s: str, text: str) -> bool:
     return s in text.split(", ")
 
 
-def filter_contain(s: str, jezyk: str, sheet):
-    sheet = sheet.filter( pl.col(jezyk).str.contains(s) == True )
+def filter_contain(s: str, lang: str, sheet):
+    sheet = sheet.filter( pl.col(lang).str.contains(s) == True )
     return sheet
 
 
 
-def search(s: str, jezyk: str, sheet):
-    filter_sheet = pl.col(jezyk).map_elements(lambda text: split_and_search(s, text), return_dtype=pl.Boolean)
+def search(s: str, lang: str, sheet):
+    filter_sheet = pl.col(lang).map_elements(lambda text: split_and_search(s, text), return_dtype=pl.Boolean)
     return sheet.filter(filter_sheet)
 
-def search_by_word(s: str, jezyk: str, sheet):
-    return sheet.filter( pl.col(jezyk).str.split(by=r'[^\w]').list.contains(s))
+def search_by_word(s: str, lang: str, sheet):
+    split_column = pl.col(lang).map_elements(lambda text: s in re.split(r'[^\w]', text), return_dtype=pl.Boolean)
+    return sheet.filter(split_column)
 
 def search_in_sheet(slova: str, lang: str, sheet):
     sheet = filter_contain( slova, lang, sheet)
@@ -173,6 +174,17 @@ def search_in_sheet(slova: str, lang: str, sheet):
         return najdene_slova
     najdene_slova = search_by_word(slova, lang, sheet)
     return najdene_slova
+
+
+
+phrasebook_result = search_in_sheet('biti', "isv", sheets['fraznik'])
+
+
+
+
+
+
+
 
 def search_in_phrasebook(slova: str, lang: str):
     sheet = sheets['fraznik']
@@ -222,6 +234,7 @@ def sort_by_distance(slova: str, lang: str, sheet):
     return sheet.sort(["distance"], descending=True)
 
 
+
 def mashina_search(slova: str, lang: str):
     print(slova, lang)
     messages = []
@@ -231,9 +244,7 @@ def mashina_search(slova: str, lang: str):
         lang_normalized = 'id'
     if lang == 'en':
         lang_normalized = 'en'
-    if lang == "isv":
-        slova = cell_normalization(slova, 'isv')     
-    slova = transl.transliteration(slova, lang)
+    slova = cell_normalization(slova, lang)
     result = search_in_sheet(slova, lang_normalized, sheets['words'])
     if not result.is_empty():
         fraznik_results = search_in_phrasebook(slova, lang_normalized)
@@ -303,23 +314,28 @@ if __name__ == "__main__":
     search_in_sheet("слово", 'ru_normalized', sheets['words'])
     filter_contain('кaкой-то', 'ru_normalized', sheets['words'])
     search('983', 'id', sheets['words'])
-    tests = [
-        'млово',
-        'быть',
-        'делaть',
-        'буду',
-        'делaю',    
-        'кaкой-то',  
-        'зa',     
-        'добрый',  
-        'ить',   
-        'тест',  
-        'снежный', 
-        'привет',
-        ]
-    for i in tests:
-        mashina_search(i, 'ru')
-
+    tests_dict = {
+        "млово": "ru",
+        "быть": "ru",
+        "делaть": "ru",
+        "буду": "ru",
+        "делaю": "ru",
+        "кaкой-то": "ru",
+        "зa": "ru",
+        "добрый": "ru",
+        "ить": "ru",
+        "тест": "ru",
+        "снежный": "ru",
+        "привет": "ru",
+        "барс": "ru",
+        "pozdrav": "isv",
+        "pozdråv": "isv",
+        "rodženja": "isv",
+    }
+    for word, lang in tests_dict.items():
+        mashina_search(word, lang)
+        print(mashina_search(word, lang))
+    x = input()
 
 
 
