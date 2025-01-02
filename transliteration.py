@@ -2,7 +2,11 @@ import re
 import yaml
 
 trans_tables = { 
+<<<<<<< HEAD
     'isv': 'ć-č ć-č ć-č ś-s ź-z ŕ-r ĺ-l ľ-l ń-n t́-t ť-t d́-d ď-d đ-dž ò-o ȯ-o ė-e è-e č-č š-š ž-ž ě-ě е̌-ě å-a ę-e ų-u ě-e y-i',
+=======
+    'isv': 'ć-č ć-č ć-č ś-s ź-z ŕ-r ĺ-l ľ-l ń-n t́-t ť-t d́-d ď-d đ-dž ò-o ȯ-o ė-e è-e č-č š-š ž-ž ě-ě е̌-ě å-a ę-e ų-u ě-e y-i ньј-nj ь- а-a ӑ-a б-b в-v ў-v г-g ґ-g д-d дж-dž ђ-dž е-e є-e ѣ-e ж-ž з-z и-i ј-j ї-ji й-j к-k л-l љ-lj м-m н-n њ-nj о-o п-p р-r с-s т-t у-u ф-f х-h ц-c ч-č ш-š щ-šč ъ-o ы-y ю-ju я-ja ё-e ѫ-u ѧ-e ћ-č ѥ-je ꙑ-i',
+>>>>>>> 606a6b0d34d7a078d8ace8fe19bcac4d25525797
     'isv_to_slovianto': 'ě-e y-i',
     'isv_to_standard': 'ć-č ć-č ć-č ś-s ź-z ŕ-r ĺ-l ľ-l ń-n t́-t ť-t d́-d ď-d đ-dž ò-o ȯ-o ė-e è-e č-č š-š ž-ž ě-ě е̌-ě å-a ę-e ų-u',
 #   'isv_to_cyrillic': 'ń-нь nj-њ lj-љ ĺ-ль ľ-ль ć-ч ć-ч ć-ч ś-с ź-з ŕ-р t́-т ť-т d́-д ď-д đ-дж ò-о ȯ-о ė-е è-е č-ч š-ш ž-ж ě-є е̌-є ě-є å-а ę-е ų-у a-а b-б c-ц č-ч d-д e-е f-ф g-г h-х i-и j-ј k-к l-л m-м n-н o-о p-п r-р s-с š-ш t-т u-у v-в y-ы z-з ž-ж',

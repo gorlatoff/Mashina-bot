@@ -1,6 +1,6 @@
 alphabets = {
 
-    'isv': 'a b c č d d́ e ě е̌ ė ę ě f g h i j k l m n o p r s š t t́ u v y z ž å è ò ó ú ý ć č ď đ ĺ ľ ń ŕ ś š ť ų ź ž ȯ'.split(' '),
+    'isv': 'a b c č d d́ e ě е̌ ė ę ě f g h i j k l m n o p r s š t t́ u v y z ž å è ò ó ú ý ć č ď đ ĺ ľ ń ŕ ś š ť ų ź ž ȯ а б в г д е ж з и к л м н о п р с т у ф х ц ч ш ы ђ є ј љ њ ћ ь ъ ӑ ѧ ѫ'.split(' '),
     'isv_cyr': 'а б в г д е ж з и к л м н о п р с т у ф х ц ч ш ы ђ є ј љ њ ћ ь ъ ӑ ѧ ѫ'.split(' '),
 
     'en': 'a b c d e f g h i j k l m n o p q r s t u v w x y z'.split(' '),
