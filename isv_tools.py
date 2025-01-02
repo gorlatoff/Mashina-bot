@@ -265,9 +265,9 @@ def mashina_search(slova: str, lang: str):
             alternative_variants = f"*{', '.join(result[:-1])}* ili *{result[-1]}*"
             answer = f"Prividno, slovnik ne imaje slovo *{slova}*. Jeste li vy imali na mysli {alternative_variants}?"
             messages.append(answer)
-        answer = f"Prividno, slovnik ne imaje slovo *{slova}*. Jeste li vy imali na mysli `.{lang} {result[0]}`?"
-        messages.append(answer)
-        return messages
+        else:
+            answer = f"Prividno, slovnik ne imaje slovo *{slova}*. Jeste li vy imali na mysli `.{lang} {result[0]}`?"
+            messages.append(answer)
     lemma = lemmatizer.slavic_lemmatizer(slova, lang)
     result = search_in_sheet(lemma, lang_normalized, sheets['words'])
     if not result.is_empty():
