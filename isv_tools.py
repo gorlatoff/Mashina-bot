@@ -218,7 +218,7 @@ def phrasebook(slova: str, lang: str):
 
 
 def search_fuzzy(s: str, langs_wordlist: list):
-    results = process.extract(s, langs_wordlist, scorer=fuzz.ratio, score_cutoff=80, limit=6)
+    results = process.extract(s, langs_wordlist, scorer=fuzz.ratio, score_cutoff=85, limit=6)
     if not results:
         return False
     results = {i[0] for i in results}
@@ -265,7 +265,6 @@ def mashina_search(slova: str, lang: str):
             alternative_variants = f"*{', '.join(result[:-1])}* ili *{result[-1]}*"
             answer = f"Prividno, slovnik ne imaje slovo *{slova}*. Jeste li vy imali na mysli {alternative_variants}?"
             messages.append(answer)
-            return messages
         answer = f"Prividno, slovnik ne imaje slovo *{slova}*. Jeste li vy imali na mysli `.{lang} {result[0]}`?"
         messages.append(answer)
         return messages
