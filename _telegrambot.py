@@ -10,7 +10,7 @@ import bots
 from bot_config import *
 
 
-bot = telebot.TeleBot(settings['test_token_telegram'])
+bot = telebot.TeleBot(settings['token_telegram'])
 
 
 @bot.message_handler(commands=['obnovi', 'обнови'])
