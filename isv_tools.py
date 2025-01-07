@@ -234,8 +234,8 @@ def sort_by_distance(slova: str, lang: str, sheet):
     return sheet.sort(["distance"], descending=True)
 
 
-
-def mashina_search(slova: str, lang: str):
+import asyncio
+async def mashina_search(slova: str, lang: str):
     print(slova, lang)
     messages = []
 
@@ -294,7 +294,7 @@ def mashina_search(slova: str, lang: str):
         messages.append(answer)
         return messages
     if lang in wiki.SUPPORTED_WIKIS:
-        wiki_result = asyncio.run(wiki.wiki_titles(lang, slova))
+        wiki_result = await wiki.wiki_titles(lang, slova)
         if wiki_result:
             messages.append(wiki_result)
             return messages

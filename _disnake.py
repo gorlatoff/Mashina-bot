@@ -21,43 +21,12 @@ def check_public(text: str) -> tuple[bool, str]:
 
 
 async def sendmessage(ctx, public, the_message):
-
-    free_channels = {
-        "slovnik-bot": 913744290826555442,
-
-        "jedino medžuslovjansky 1": 879438775011385387,
-        "jedino medžuslovjansky 2": 881609946553262180,
-        "any-language": 918601986428010547,
-        "rabotanje zajedno": 1153414647324606484,
-
-        "eksperimentalny ms": 1185114493097885748,
-        "grěšky v slovniku": 1138823260444840037,
-        "tehnično věče": 1099638006903738379,
-        "ideje novyh projektov": 902594298149756999,
-        "razvoj ms slovnika": 896807569601986610,
-
-        "o lingvistikě": 879453674605256724,
-        "pytanja": 1048229781407281182,
-    }
-
-    channel_id = int(ctx.message.channel.id)
-    server_id = int(ctx.message.guild.id)
-    ms_besěda_id = 879438774323535914
-
-
     the_message = re.sub(r'(?<!\])\(([^)]*)\)', lambda m: f'\\({m.group(1)}\\)', the_message)
     the_message = re.sub(r'\[(.*?)\]\((.*?)\)', lambda m: f'[{m.group(1)}](<{m.group(2)}>)', the_message)
 
-
-    if any([channel_id in free_channels.values(), server_id != ms_besěda_id, public]):
-        await ctx.send( the_message)
-        return True
-
-    await ctx.send(f"Rezultaty sut v kanalu <#{free_channels['slovnik-bot']}>. Za prizyvanje bota v drugyh kanalah napiši `{ctx.message.content} --public`")
-
-    slovnik_bot = bot.get_channel(free_channels['slovnik-bot'])
-    await slovnik_bot.send(the_message)
+    await ctx.send( the_message)
     return True
+
 
 
 @bot.command(aliases=['obnovi', 'обнови'])
@@ -80,7 +49,7 @@ async def dictionary_handler(ctx):
         public, text = check_public(ctx.message.content)
         lang, slova = bots.command_splitter(ctx.message.content, 1)
 
-        results = isv.mashina_search(slova, lang)
+        results = await isv.mashina_search(slova, lang)
         for text in results:
             text = text.replace("<", "").replace(">", "")
             await sendmessage(ctx, public, text)
@@ -89,34 +58,35 @@ async def dictionary_handler(ctx):
 
 @bot.command(aliases=['wiki', 'wiki1', 'wiki2', 'wiki_summary'])
 async def wikipedia_handler(ctx):
-    try:
-        if ' ' not in ctx.message.content:
-            await ctx.send( "Priměr korektnogo prikaza: `.wiki be Вайна з эму`")
+    # try:
+    if ' ' not in ctx.message.content:
+        await ctx.send( "Priměr korektnogo prikaza: `.wiki be Вайна з эму`")
 
-        public, text = check_public(ctx.message.content)
+    public, text = check_public(ctx.message.content)
 
-        lang, slova = bots.command_splitter(ctx.message.content, 2)
+    lang, slova = bots.command_splitter(ctx.message.content, 2)
 
-        if lang not in wiki.SUPPORTED_WIKIS:
-            await sendmessage(ctx, public, "Ne znajemy jezyk")
+    if lang not in wiki.SUPPORTED_WIKIS:
+        await sendmessage(ctx, public, "Ne znajemy jezyk")
+        return
+
+    if "wiki2" in ctx.message.content or "wiki_summary" in ctx.message.content:
+        result = await wiki.wiki_summary(lang, slova)
+    else:
+        result = await wiki.wiki_titles(lang, slova)
+
+    if result:
+        print(result)
+        if len(result) > 3000:
+            for chunk in [result[i:i+3000] for i in range(0, len(result), 3000)]:
+                await sendmessage(ctx, public, chunk)
             return
-
-        if "wiki2" in ctx.message.content or "wiki_summary" in ctx.message.content:
-            result = asyncio.run(wiki.wiki_summary(lang, slova))
-        else:
-            result = asyncio.run(wiki.wiki_titles(lang, slova))
-
-        if result:
-            if len(result) > 3000:
-                for chunk in [result[i:i+3000] for i in range(0, len(result), 3000)]:
-                    await sendmessage(ctx, public, chunk)
-                return
-            await sendmessage(ctx, public, result)
-            return
-        noresult = f"V Wikipediji nema teksta o prědmetu `{slova}`, ili on ne imaje prěvody na druge jezyky. Gledati v naših slovnikah: `.{lang} {text}`"
-        await sendmessage(ctx, public, noresult)
-    except:
-        await ctx.send( "Nažalj, moj programist ne primětil někaku pogrěšku. Mečtam o času, kogda roboti počnut pisati svoj kod sami.")
+        await sendmessage(ctx, public, result)
+        return
+    noresult = f"V Wikipediji nema teksta o prědmetu `{slova}`, ili on ne imaje prěvody na druge jezyky. Gledati v naših slovnikah: `.{lang} {text}`"
+    await sendmessage(ctx, public, noresult)
+    # except:
+    #     await ctx.send( "Nažalj, moj programist ne primětil někaku pogrěšku. Mečtam o času, kogda roboti počnut pisati svoj kod sami.")
 
 with open('pouky.yaml', encoding="UTF-8") as fh:
     pouky_data = yaml.load(fh, Loader=yaml.FullLoader)
