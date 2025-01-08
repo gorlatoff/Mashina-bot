@@ -23,7 +23,6 @@ def check_public(text: str) -> tuple[bool, str]:
 async def sendmessage(ctx, public, the_message):
     the_message = re.sub(r'(?<!\])\(([^)]*)\)', lambda m: f'\\({m.group(1)}\\)', the_message)
     the_message = re.sub(r'\[(.*?)\]\((.*?)\)', lambda m: f'[{m.group(1)}](<{m.group(2)}>)', the_message)
-
     await ctx.send( the_message)
     return True
 
@@ -95,7 +94,7 @@ def pouka_render(pouky_data, name, command):
     name = str(name)
     result = pouky_data[name]["text"]
     if "image" in pouky_data[name]:
-        image_link = "[​](<link>)\n".replace("link", pouky_data[name]["image"])
+        image_link = f"[_____________]({pouky_data[name]["image"]})\n"
         result = image_link + result
     if lang_detect.checkalphabet(command) == 'latin':
         result = transl.transliteration2(result, 'kir_to_lat')
@@ -167,4 +166,4 @@ async def help(ctx):
 async def on_ready():
     print("Bot jest gotovy")
 
-bot.run(settings['token_discord'])
+bot.run(settings['test_token_discord'])
