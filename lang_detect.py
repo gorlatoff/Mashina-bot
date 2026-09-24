@@ -52,8 +52,6 @@ def checkalphabet(text):
     latin_chars = set('abcdefghijklmnopqrstuvwxyzěščžåęųėȯŕĺńt́d́śźćđ')
     text_chars = set(text)
 
-    print(cyrillic_chars & text_chars)
-    print(latin_chars & text_chars)
     if len(cyrillic_chars & text_chars) > len(latin_chars & text_chars):
         return 'cyrillic'
     return 'latin'

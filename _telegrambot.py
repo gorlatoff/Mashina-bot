@@ -18,7 +18,7 @@ async def handle_update(message):
     try:
         await reply(message, "Ide obnovjenje")
         text = message.text.lower()
-        isv.update_sheets(text)
+        await asyncio.to_thread(isv.update_sheets, text)
         await reply(message, "Obnovjenje jest skončeno")
     except:
         await reply(message, "Nažalj, moj programist ne primětil někaku pogrěšku. Mečtam o času, kogda roboti počnut pisati svoj kod sami.")

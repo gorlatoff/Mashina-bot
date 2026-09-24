@@ -17,13 +17,20 @@ def take_first_sentence(s):
             return str(s[:i+1])
     return s.split("\n")[0]
 
-async def fetch_wiki_data(session, lang, title, props):
-    url = f"https://{lang}.wikipedia.org/w/api.php?action=query&format=json&prop={props}&titles={title}&lllimit=max"
-    async with session.get(url) as response:
-        data = await response.json()
-    page = next(iter(data.get("query", {}).get("pages", {}).values()), None)
-    return page 
+HEADERS = {
+    "User-Agent": "Mashina-bot/1.0 (dictionary Discord/Telegram bot; contact: your@email)"
+}
 
+async def fetch_wiki_data(session, lang, text, props):
+    url = f"https://{lang}.wikipedia.org/w/api.php?action=query&format=json&prop={props}&titles={text}&lllimit=max"
+    async with session.get(url, headers=HEADERS) as response:
+        if response.status != 200:
+            return None
+        try:
+            return await response.json()
+        except aiohttp.ContentTypeError:
+            return None
+            
 async def fetch_langlinks(session, lang, text):
     page = await fetch_wiki_data(session, lang, text, "langlinks|extracts&exintro&explaintext")
     langlinks = page.get("langlinks", []) or None

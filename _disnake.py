@@ -33,7 +33,7 @@ async def update(ctx):
     try:
         public, text = check_public(ctx.message.content)
         await sendmessage(ctx, public, "Ide obnovjenje")
-        isv.update_sheets(text.lower())
+        await asyncio.to_thread(isv.update_sheets, text.lower())
         await sendmessage(ctx, public, "Obnovjenje jest skončeno")
     except:
         await sendmessage(ctx, True, "Nažalj, moj programist ne primětil někaku pogrěšku. Mečtam o času, kogda roboti počnut pisati svoj kod sami.")
@@ -44,9 +44,10 @@ async def dictionary_handler(ctx):
     """Search for words in different languages"""
     try:
         if ' ' not in ctx.message.content:
-            await ctx.send( "Priměr korektnogo prikaza: `/pl kurva`", is_disable=True)
+            await ctx.send( "Priměr korektnogo prikaza: `.pl kurva`", is_disable=True)
+            return
         public, text = check_public(ctx.message.content)
-        lang, slova = bots.command_splitter(ctx.message.content, 1)
+        lang, slova = bots.command_splitter(text, 1)
 
         results = await isv.mashina_search(slova, lang)
         for text in results:
@@ -60,6 +61,7 @@ async def wikipedia_handler(ctx):
     # try:
     if ' ' not in ctx.message.content:
         await ctx.send( "Priměr korektnogo prikaza: `.wiki be Вайна з эму`")
+        return
 
     public, text = check_public(ctx.message.content)
 
@@ -94,7 +96,7 @@ def pouka_render(pouky_data, name, command):
     name = str(name)
     result = pouky_data[name]["text"]
     if "image" in pouky_data[name]:
-        image_link = f"[_____________]({pouky_data[name]["image"]})\n"
+        image_link = f"[_____________]({pouky_data[name]['image']})\n"
         result = image_link + result
     if lang_detect.checkalphabet(command) == 'latin':
         result = transl.transliteration2(result, 'kir_to_lat')
@@ -102,18 +104,20 @@ def pouka_render(pouky_data, name, command):
 
 
 @bot.command(aliases=['fraznik', 'фразник'])
-async def phrasebook_handler(ctx, lang: str, slova: str):
+async def phrasebook_handler(ctx):
     """Search in the phrasebook"""
     try:
-        public, text = check_public(ctx.message.content)
         if ' ' not in ctx.message.content:
-            await sendmessage(ctx, public, "Priměr korektnogo prikaza: `/fraznik ru думать`")
+            await sendmessage(ctx, False, "Priměr korektnogo prikaza: `.fraznik ru думать`")
+            return
 
+        public, text = check_public(ctx.message.content)
+        lang, slova = bots.command_splitter(ctx.message.content, 2)
         results = isv.phrasebook(slova, lang)
-        for text in results:
-            text = text.replace("<", "").replace(">", "")
-            await sendmessage(ctx, public, text)
-    except:
+        for card in results:
+            card = card.replace("<", "").replace(">", "")
+            await sendmessage(ctx, public, card)
+    except Exception:
         await ctx.send( "Nažalj, moj programist ne primětil někaku pogrěšku. Mečtam o času, kogda roboti počnut pisati svoj kod sami.")
 
 
@@ -155,7 +159,7 @@ async def pouka9(ctx):
 
 @bot.command(aliases = ['правила', 'pravila'])
 async def discord_rules(ctx):
-    await ctx.send(pouka_render(pouky_data, 'pravila_discord'))
+    await ctx.send(pouka_render(pouky_data, 'pravila_discord', "latin"))
 
 @bot.command(aliases = ['pomoč', 'помоч'])
 async def help(ctx):

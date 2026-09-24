@@ -26,12 +26,9 @@ def formatizer(slovo, botplatform = "discord"):
 
     slovo = slovo[1:len(slovo)]
 
-    if botplatform == "discord":
-        return f" 🤖{slovo}"
-    if botplatform == "telegram":    
-        return f" 🤖{slovo}"
-    else:
-        print("error")
+    if botplatform not in ("discord", "telegram"):
+        raise ValueError(f"Unknown botplatform: {botplatform!r}")
+    return f" 🤖{slovo}"
     
 def link_na_slovo(i, sheetname: str):
     match sheetname:
