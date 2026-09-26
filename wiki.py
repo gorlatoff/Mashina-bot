@@ -18,7 +18,7 @@ def take_first_sentence(s):
     return s.split("\n")[0]
 
 HEADERS = {
-    "User-Agent": "Mashina-bot/1.0 (dictionary Discord/Telegram bot; contact: your@email)"
+    "User-Agent": "Mashina-bot v2.1 (dictionary Discord/Telegram bot; contact: gorlatoff@gmail.com)"
 }
 
 async def fetch_wiki_data(session, lang, text, props):
